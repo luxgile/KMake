@@ -185,9 +185,26 @@ static uint8_t makeConstant(BYTE* byte, TYPE_ID id)
 	return (uint8_t)constant;
 }
 
+static uint8_t makeConstantPointer(BYTE* byte, TYPE_ID id)
+{
+	int constant = ByteCode_AddConstantPointer(currentChunk(), id, byte);
+	if (constant > UINT8_MAX)
+	{
+		errorAtPrevious("Too many constants in one chunk.");
+		return 0;
+	}
+
+	return (uint8_t)constant;
+}
+
 static void emitConstant(BYTE* bytes, TYPE_ID id)
 {
 	emit3Bytes(OP_CONSTANT, id, makeConstant(bytes, id));
+}
+
+static void emitConstantPointer(BYTE* bytes, TYPE_ID id)
+{
+	emit3Bytes(OP_CONSTANT, id, makeConstantPointer(bytes, id));
 }
 
 void literal()
@@ -202,7 +219,7 @@ void literal()
 void string()
 {
 	StringPointer* s = CopyString(parser.previous.start + 1, parser.previous.length - 2);
-	emitConstant(s, TYPEID_STRING);
+	emitConstantPointer(s, TYPEID_STRING);
 }
 
 void number()

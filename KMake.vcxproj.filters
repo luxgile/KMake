@@ -54,6 +54,9 @@
     <ClCompile Include="commonTypes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hashTable.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bytecode.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="typeTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hashTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

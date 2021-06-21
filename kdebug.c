@@ -33,7 +33,7 @@ static int constantInstruction(const char* name, ByteCode* chunk, int offset)
 	{
 	case TYPEID_DEC: printf("%g", ByteArray_Read(&chunk->constants, double, constant)); break;
 	case TYPEID_BOOL: printf("%s", ByteArray_Read(&chunk->constants, bool, constant) ? "true" : "false"); break;
-	case TYPEID_STRING: printf("%s", (char*)ByteArray_Read(&chunk->constants, StringPointer, constant).base.p); break;
+	case TYPEID_STRING: printf("%s", (char*)ByteArray_Read(&chunk->constants, StringPointer*, constant)->base.p); break;
 	}
 
 	printf("'\n");

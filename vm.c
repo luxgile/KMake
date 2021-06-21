@@ -60,6 +60,13 @@ BYTE* VM_Pop(TYPE_ID type)
 	vm.stackTop -= TypeTable_GetTypeInfo(type)->size;
 	return vm.stackTop;
 }
+BYTE* VM_PopPointer(TYPE_ID type)
+{
+	TypeArray_RemoveType(&vm.stackTypes, type);
+
+	vm.stackTop -= sizeof(void*);
+	return vm.stackTop;
+}
 
 static TYPE_ID peekType()
 {
@@ -95,8 +102,8 @@ static bool Equality()
 	case TYPEID_DEC: return CAST(VM_Pop(TYPEID_DEC), double) == CAST(VM_Pop(TYPEID_DEC), double);
 	case TYPEID_STRING:
 	{
-		StringPointer* a = &CAST(VM_Pop(TYPEID_STRING), StringPointer);
-		StringPointer* b = &CAST(VM_Pop(TYPEID_STRING), StringPointer);
+		StringPointer* a = CAST(VM_Pop(TYPEID_STRING), StringPointer*);
+		StringPointer* b = CAST(VM_Pop(TYPEID_STRING), StringPointer*);
 		return a->length == b->length && memcmp(a->base.p, b->base.p, a->length) == 0;
 	}
 	}
@@ -131,7 +138,7 @@ InterpretResult run()
 			{
 			case TYPEID_DEC: printf("%g", CAST(currentByte, double)); break;
 			case TYPEID_BOOL: printf("%s", CAST(currentByte, bool) ? "true" : "false"); break;
-			case TYPEID_STRING: printf("%s", (char*)CAST(currentByte, StringPointer).base.p); break;
+			case TYPEID_STRING: printf("%s", (char*)CAST(currentByte, StringPointer*)->base.p); break;
 			}
 			printf("]");
 			currentByte += TypeTable_GetTypeInfo(type)->size;
@@ -187,7 +194,7 @@ InterpretResult run()
 			{
 			case TYPEID_DEC: printf("%g", CAST(VM_Pop(TYPEID_DEC), double)); break;
 			case TYPEID_BOOL: printf("%s", CAST(VM_Pop(TYPEID_BOOL), bool) ? "true" : "false"); break;
-			case TYPEID_STRING: printf("%s", (char*)CAST(VM_Pop(TYPEID_STRING), StringPointer).base.p); break;
+			case TYPEID_STRING: printf("%s", (char*)CAST(VM_Pop(TYPEID_STRING), StringPointer*)->base.p); break;
 			}
 			printf("\n");
 			return INTERPRET_OK;

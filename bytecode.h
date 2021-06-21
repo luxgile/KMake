@@ -37,6 +37,7 @@ typedef struct
 void ByteCode_InitChunk(ByteCode* chunk);
 void ByteCode_WriteChunk(ByteCode* chunk, uint8_t code, int line);
 int ByteCode_AddConstant(ByteCode* chunk, TYPE_ID id, BYTE* value);
+int ByteCode_AddConstantPointer(ByteCode* chunk, TYPE_ID id, BYTE* value);
 void ByteCode_FreeChunk(ByteCode* chunk);
 
 #endif

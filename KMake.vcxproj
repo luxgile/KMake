@@ -144,6 +144,7 @@
     <ClCompile Include="bytecode.c" />
     <ClCompile Include="commonTypes.c" />
     <ClCompile Include="commonTypes.h" />
+    <ClCompile Include="hashTable.c" />
     <ClCompile Include="kcompiler.c" />
     <ClCompile Include="kdebug.c" />
     <ClCompile Include="kmem.c" />
@@ -158,6 +159,7 @@
     <ClInclude Include="byteArray.h" />
     <ClInclude Include="bytecode.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="hashTable.h" />
     <ClInclude Include="kcompiler.h" />
     <ClInclude Include="kdebug.h" />
     <ClInclude Include="kmem.h" />

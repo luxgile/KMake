@@ -12,6 +12,7 @@ typedef struct
 {
 	Pointer base;
 	int length;
+	uint32_t hash;
 } StringPointer;
 
 StringPointer* CopyString(const char* chars, int length);
