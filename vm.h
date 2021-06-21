@@ -6,7 +6,7 @@
 
 #define STACK_MAX 1024
 
-#define CAST(bytes, type) *(type*)bytes
+#define CAST(bytes, type) (*(type*)bytes)
 
 typedef struct
 {

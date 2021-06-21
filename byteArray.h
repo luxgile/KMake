@@ -16,5 +16,5 @@ void ByteArray_AddByte(ByteArray* array, BYTE byte);
 void ByteArray_AddBytes(ByteArray* array, BYTE* bytes, int size);
 void ByteArray_Free(ByteArray* array);
 
-#define ByteArray_Read(array, type, index) *(type*)&(array)->bytes[index]
+#define ByteArray_Read(array, type, index) (*(type*)&(array)->bytes[index])
 #define ByteArray_ReadByte(array, index) &(array)->bytes[index]

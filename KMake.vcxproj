@@ -142,6 +142,8 @@
   <ItemGroup>
     <ClCompile Include="byteArray.c" />
     <ClCompile Include="bytecode.c" />
+    <ClCompile Include="commonTypes.c" />
+    <ClCompile Include="commonTypes.h" />
     <ClCompile Include="kcompiler.c" />
     <ClCompile Include="kdebug.c" />
     <ClCompile Include="kmem.c" />

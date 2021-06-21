@@ -40,6 +40,7 @@ void unary();
 void binary();
 void number();
 void literal();
+void string();
 
 Parser parser;
 ByteCode* compilingChunk;

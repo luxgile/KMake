@@ -5,32 +5,33 @@
 #include "kscan.h"
 #include "kdebug.h"
 #include "bytecode.h"
+#include "commonTypes.h"
 
 ParseRule parseRules[] = {
-  [TOKEN_LEFT_PAREN] =			{grouping, NULL,   PREC_NONE},
-  [TOKEN_RIGHT_PAREN] =			{NULL,     NULL,   PREC_NONE},
-  [TOKEN_LEFT_BRACE] =			{NULL,     NULL,   PREC_NONE},
-  [TOKEN_RIGHT_BRACE] =			{NULL,     NULL,   PREC_NONE},
-  [TOKEN_COMMA] =				{NULL,     NULL,   PREC_NONE},
-  [TOKEN_DOT] =					{NULL,     NULL,   PREC_NONE},
-  [TOKEN_SEMICOLON] =			{NULL,     NULL,   PREC_NONE},
+  [TOKEN_LEFT_PAREN] = {grouping, NULL,   PREC_NONE},
+  [TOKEN_RIGHT_PAREN] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_LEFT_BRACE] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_RIGHT_BRACE] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_COMMA] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_DOT] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_SEMICOLON] = {NULL,     NULL,   PREC_NONE},
 
-  [TOKEN_MINUS] =				{unary,    binary, PREC_TERM},
-  [TOKEN_PLUS] =				{NULL,     binary, PREC_TERM},
-  [TOKEN_SLASH] =				{NULL,     binary, PREC_FACTOR},
-  [TOKEN_STAR] =				{NULL,     binary, PREC_FACTOR},
+  [TOKEN_MINUS] = {unary,    binary, PREC_TERM},
+  [TOKEN_PLUS] = {NULL,     binary, PREC_TERM},
+  [TOKEN_SLASH] = {NULL,     binary, PREC_FACTOR},
+  [TOKEN_STAR] = {NULL,     binary, PREC_FACTOR},
 
-  [TOKEN_IS] =					{NULL,     binary,   PREC_EQUALITY},
-  [TOKEN_NOT] =					{unary,     NULL,   PREC_NONE},
-  [TOKEN_IS_NOT] =				{NULL,     binary,   PREC_EQUALITY},
-  [TOKEN_EQUAL] =				{NULL,     binary,   PREC_EQUALITY},
-  [TOKEN_GREATER] =				{NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_GREATER_OR_EQUALS] =	{NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_LESS] =				{NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_LESS_OR_EQUALS] =		{NULL,     binary,   PREC_COMPARISON},
+  //[TOKEN_IS] = {NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_NOT] = {unary,     binary,   PREC_NONE},
+  //[TOKEN_IS_NOT] = {NULL,     binary,   PREC_EQUALITY},
+  [TOKEN_EQUALS] = {NULL,     binary,   PREC_EQUALITY},
+  [TOKEN_GREATER] = {NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_GREATER_OR_EQUALS] = {NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_LESS] = {NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_LESS_OR_EQUALS] = {NULL,     binary,   PREC_COMPARISON},
 
   [TOKEN_IDENTIFIER] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_STRING] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_STRING] = {string,     NULL,   PREC_NONE},
   [TOKEN_NUMBER] = {number,   NULL,   PREC_NONE},
   [TOKEN_AND] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_CLASS] = {NULL,     NULL,   PREC_NONE},
@@ -48,8 +49,8 @@ ParseRule parseRules[] = {
   [TOKEN_TRUE] = {literal,     NULL,   PREC_NONE},
   //[TOKEN_VAR]				= {NULL,     NULL,   PREC_NONE},
   //[TOKEN_WHILE]			= {NULL,     NULL,   PREC_NONE},
-  [TOKEN_ERROR] =	{NULL,     NULL,   PREC_NONE},
-  [TOKEN_EOF] =		{NULL,     NULL,   PREC_NONE},
+  [TOKEN_ERROR] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_EOF] = {NULL,     NULL,   PREC_NONE},
 };
 
 static ByteCode* currentChunk()
@@ -172,9 +173,9 @@ static void endCompiler()
 #endif
 }
 
-static uint8_t makeConstant(double value)
+static uint8_t makeConstant(BYTE* byte, TYPE_ID id)
 {
-	int constant = ByteCode_AddConstant(currentChunk(), TYPEID_DEC, &value);
+	int constant = ByteCode_AddConstant(currentChunk(), id, byte);
 	if (constant > UINT8_MAX)
 	{
 		errorAtPrevious("Too many constants in one chunk.");
@@ -184,25 +185,30 @@ static uint8_t makeConstant(double value)
 	return (uint8_t)constant;
 }
 
-static void emitConstant(double value)
+static void emitConstant(BYTE* bytes, TYPE_ID id)
 {
-	emit3Bytes(OP_CONSTANT, TYPEID_DEC, makeConstant(value));
+	emit3Bytes(OP_CONSTANT, id, makeConstant(bytes, id));
 }
 
 void literal()
 {
 	switch (parser.previous.type)
 	{
-		case TOKEN_TRUE: emitByte(OP_TRUE); break;
-		case TOKEN_FALSE: emitByte(OP_FALSE); break;
+	case TOKEN_TRUE: emitByte(OP_TRUE); break;
+	case TOKEN_FALSE: emitByte(OP_FALSE); break;
 	}
 }
 
+void string()
+{
+	StringPointer* s = CopyString(parser.previous.start + 1, parser.previous.length - 2);
+	emitConstant(s, TYPEID_STRING);
+}
 
 void number()
 {
 	double value = strtod(parser.previous.start, NULL);
-	emitConstant(value);
+	emitConstant(&value, TYPEID_DEC);
 }
 
 void unary()
@@ -233,10 +239,10 @@ void binary()
 	case TOKEN_MINUS:				emitByte(OP_SUBTRACT); break;
 	case TOKEN_STAR:				emitByte(OP_MULT); break;
 	case TOKEN_SLASH:				emitByte(OP_DIVIDE); break;
-	case TOKEN_EQUAL:				emitByte(OP_EQUAL); break;
+	case TOKEN_EQUALS:				emitByte(OP_EQUALS); break;
 
-	case TOKEN_IS_NOT:				emit2Bytes(OP_IS, OP_NOT); break;
-	case TOKEN_IS:					emitByte(OP_IS); break;
+	//case TOKEN_IS_NOT:				emit2Bytes(OP_EQUAL, OP_NOT); break;
+	//case TOKEN_IS:					emitByte(OP_IS); break;	To define equality on types
 	case TOKEN_GREATER:				emitByte(OP_GREAT); break;
 	case TOKEN_GREATER_OR_EQUALS:	emit2Bytes(OP_LESS, OP_NOT); break;
 	case TOKEN_LESS:				emitByte(OP_LESS); break;

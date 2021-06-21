@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include "commonTypes.h"
 
 VM vm;
 
@@ -65,11 +66,6 @@ static TYPE_ID peekType()
 	return vm.stackTypes.types[vm.stackTypes.count - 1];
 }
 
-static char peek(int distance)
-{
-	return vm.stackTop[-1 - distance];
-}
-
 InterpretResult interpret(const char* source)
 {
 	ByteCode c;
@@ -89,6 +85,23 @@ InterpretResult interpret(const char* source)
 	ByteCode_FreeChunk(&c);
 	return result;
 	//return run();
+}
+
+static bool Equality()
+{
+	switch (peekType())
+	{
+	case TYPEID_BOOL: return CAST(VM_Pop(TYPEID_BOOL), bool) == CAST(VM_Pop(TYPEID_BOOL), bool);
+	case TYPEID_DEC: return CAST(VM_Pop(TYPEID_DEC), double) == CAST(VM_Pop(TYPEID_DEC), double);
+	case TYPEID_STRING:
+	{
+		StringPointer* a = &CAST(VM_Pop(TYPEID_STRING), StringPointer);
+		StringPointer* b = &CAST(VM_Pop(TYPEID_STRING), StringPointer);
+		return a->length == b->length && memcmp(a->base.p, b->base.p, a->length) == 0;
+	}
+	}
+
+	return false;
 }
 
 InterpretResult run()
@@ -118,6 +131,7 @@ InterpretResult run()
 			{
 			case TYPEID_DEC: printf("%g", CAST(currentByte, double)); break;
 			case TYPEID_BOOL: printf("%s", CAST(currentByte, bool) ? "true" : "false"); break;
+			case TYPEID_STRING: printf("%s", (char*)CAST(currentByte, StringPointer).base.p); break;
 			}
 			printf("]");
 			currentByte += TypeTable_GetTypeInfo(type)->size;
@@ -156,33 +170,24 @@ InterpretResult run()
 		case OP_ADD:		BINARY_OP(+, double, TYPEID_DEC, double, TYPEID_DEC); break;
 		case OP_SUBTRACT:	BINARY_OP(-, double, TYPEID_DEC, double, TYPEID_DEC); break;
 		case OP_MULT:		BINARY_OP(*, double, TYPEID_DEC, double, TYPEID_DEC); break;
-		case OP_DIVIDE:		BINARY_OP(/, double, TYPEID_DEC, double, TYPEID_DEC); break;
+		case OP_DIVIDE:		BINARY_OP(/ , double, TYPEID_DEC, double, TYPEID_DEC); break;
 
-		case OP_EQUAL:		BINARY_OP(== , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
+		case OP_EQUALS: { bool result = Equality(); VM_Push(&result, TYPEID_BOOL); break; }
 		case OP_GREAT:		BINARY_OP(> , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
 		case OP_LESS:		BINARY_OP(< , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
 
 		case OP_TRUE: { bool b = true; VM_Push(&b, TYPEID_BOOL); break; }
 		case OP_FALSE: { bool b = false; VM_Push(&b, TYPEID_BOOL); break; }
 
-		//Bug: IS cuts the rest of the operations
-		case OP_IS:
-		{
-			bool r = CAST(VM_Pop(TYPEID_BOOL), bool) == CAST(VM_Pop(TYPEID_BOOL), bool);
-			VM_Push(&r, TYPEID_BOOL);
-		}
+					 //case OP_IS:			BINARY_OP(< , bool, TYPEID_BOOL, bool, TYPEID_BOOL); break;
 
 		case OP_RETURN:
 		{
 			switch (peekType())
 			{
-			case TYPEID_DEC:
-				printf("%g", CAST(VM_Pop(TYPEID_DEC), double));
-				break;
-
-			case TYPEID_BOOL:
-				printf("%s", CAST(VM_Pop(TYPEID_BOOL), bool) ? "true" : "false");
-				break;
+			case TYPEID_DEC: printf("%g", CAST(VM_Pop(TYPEID_DEC), double)); break;
+			case TYPEID_BOOL: printf("%s", CAST(VM_Pop(TYPEID_BOOL), bool) ? "true" : "false"); break;
+			case TYPEID_STRING: printf("%s", (char*)CAST(VM_Pop(TYPEID_STRING), StringPointer).base.p); break;
 			}
 			printf("\n");
 			return INTERPRET_OK;

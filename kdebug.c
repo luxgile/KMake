@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "kdebug.h"
 #include "runLines.h"
+#include "commonTypes.h"
 
 void disassembleChunk(ByteCode* chunk, const char* name)
 {
@@ -32,6 +33,7 @@ static int constantInstruction(const char* name, ByteCode* chunk, int offset)
 	{
 	case TYPEID_DEC: printf("%g", ByteArray_Read(&chunk->constants, double, constant)); break;
 	case TYPEID_BOOL: printf("%s", ByteArray_Read(&chunk->constants, bool, constant) ? "true" : "false"); break;
+	case TYPEID_STRING: printf("%s", (char*)ByteArray_Read(&chunk->constants, StringPointer, constant).base.p); break;
 	}
 
 	printf("'\n");
@@ -59,13 +61,13 @@ int disassembleInstruction(ByteCode* chunk, int offset)
 	case OP_DIVIDE: return simpleInstruction("OP_DIVIDE", chunk, offset);
 
 	case OP_NEGATE: return simpleInstruction("OP_NEGATE", offset);
-	case OP_EQUAL: return simpleInstruction("OP_EQUAL", offset);
+	case OP_EQUALS: return simpleInstruction("OP_EQUALS", offset);
 
 	case OP_TRUE: return simpleInstruction("OP_TRUE", offset);
 	case OP_FALSE: return simpleInstruction("OP_FALSE", offset);
 
 	case OP_NOT: return simpleInstruction("OP_NOT", offset);
-	case OP_IS: return simpleInstruction("OP_IS", offset);
+	//case OP_IS: return simpleInstruction("OP_IS", offset);
 
 	default:
 		printf("Unknown OpCode %d\n", instruction);

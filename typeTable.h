@@ -11,6 +11,12 @@ typedef void (*DebugValueFn)(BYTE* bytes);
 #define TYPEID_BOOL 1
 #define IS_BOOL(type) type == TYPEID_BOOL
 
+#define TYPEID_POINTER 2
+#define IS_POINTER(type) type == TYPEID_POINTER
+
+#define TYPEID_STRING 3
+#define IS_POINTER(type) type == TYPEID_POINTER
+
 typedef struct
 {
 	char* name;

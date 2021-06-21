@@ -1,5 +1,5 @@
 #include "typeTable.h"
-
+#include "commonTypes.h"
 #include <string.h>
 #include "kmem.h"
 
@@ -15,11 +15,23 @@ void TypeTable_Init()
 	doubleInfo.size = sizeof(double);
 	TypeTable_AddType(doubleInfo);
 
-	//Bool = 0
+	//Bool = 1
 	TypeInfo boolInfo;
 	boolInfo.name = "Bool";
 	boolInfo.size = sizeof(bool);
 	TypeTable_AddType(boolInfo);
+
+	//Bool = 2
+	TypeInfo pInfo;
+	pInfo.name = "Pointer";
+	pInfo.size = sizeof(Pointer);
+	TypeTable_AddType(pInfo);
+
+	//Bool = 3
+	TypeInfo stringInfo;
+	stringInfo.name = "String";
+	stringInfo.size = sizeof(StringPointer);
+	TypeTable_AddType(stringInfo);
 }
 
 TYPE_ID TypeTable_AddType(TypeInfo type)
