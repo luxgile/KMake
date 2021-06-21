@@ -7,25 +7,28 @@
 #include "bytecode.h"
 
 ParseRule parseRules[] = {
-  [TOKEN_LEFT_PAREN] = {grouping, NULL,   PREC_NONE},
-  [TOKEN_RIGHT_PAREN] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_LEFT_BRACE] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_RIGHT_BRACE] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_COMMA] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_DOT] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_MINUS] = {unary,    binary, PREC_TERM},
-  [TOKEN_PLUS] = {NULL,     binary, PREC_TERM},
-  [TOKEN_SEMICOLON] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_SLASH] = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_STAR] = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_IS] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_NOT] = {unary,     NULL,   PREC_NONE},
-  [TOKEN_IS_NOT] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_EQUAL] = {NULL,     NULL,   PREC_NONE}, 
-  [TOKEN_GREATER] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_GREATER_OR_EQUALS] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_LESS] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_LESS_OR_EQUALS] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_LEFT_PAREN] =			{grouping, NULL,   PREC_NONE},
+  [TOKEN_RIGHT_PAREN] =			{NULL,     NULL,   PREC_NONE},
+  [TOKEN_LEFT_BRACE] =			{NULL,     NULL,   PREC_NONE},
+  [TOKEN_RIGHT_BRACE] =			{NULL,     NULL,   PREC_NONE},
+  [TOKEN_COMMA] =				{NULL,     NULL,   PREC_NONE},
+  [TOKEN_DOT] =					{NULL,     NULL,   PREC_NONE},
+  [TOKEN_SEMICOLON] =			{NULL,     NULL,   PREC_NONE},
+
+  [TOKEN_MINUS] =				{unary,    binary, PREC_TERM},
+  [TOKEN_PLUS] =				{NULL,     binary, PREC_TERM},
+  [TOKEN_SLASH] =				{NULL,     binary, PREC_FACTOR},
+  [TOKEN_STAR] =				{NULL,     binary, PREC_FACTOR},
+
+  [TOKEN_IS] =					{NULL,     binary,   PREC_EQUALITY},
+  [TOKEN_NOT] =					{unary,     NULL,   PREC_NONE},
+  [TOKEN_IS_NOT] =				{NULL,     binary,   PREC_EQUALITY},
+  [TOKEN_EQUAL] =				{NULL,     binary,   PREC_EQUALITY},
+  [TOKEN_GREATER] =				{NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_GREATER_OR_EQUALS] =	{NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_LESS] =				{NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_LESS_OR_EQUALS] =		{NULL,     binary,   PREC_COMPARISON},
+
   [TOKEN_IDENTIFIER] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_STRING] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_NUMBER] = {number,   NULL,   PREC_NONE},
@@ -45,8 +48,8 @@ ParseRule parseRules[] = {
   [TOKEN_TRUE] = {literal,     NULL,   PREC_NONE},
   //[TOKEN_VAR]				= {NULL,     NULL,   PREC_NONE},
   //[TOKEN_WHILE]			= {NULL,     NULL,   PREC_NONE},
-  [TOKEN_ERROR] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_EOF] = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_ERROR] =	{NULL,     NULL,   PREC_NONE},
+  [TOKEN_EOF] =		{NULL,     NULL,   PREC_NONE},
 };
 
 static ByteCode* currentChunk()
@@ -139,7 +142,13 @@ static void emitByte(uint8_t byte)
 	ByteCode_WriteChunk(currentChunk(), byte, parser.previous.line);
 }
 
-static void emitBytes(uint8_t byte1, uint8_t byte2, uint8_t byte3)
+static void emit2Bytes(uint8_t byte1, uint8_t byte2)
+{
+	emitByte(byte1);
+	emitByte(byte2);
+}
+
+static void emit3Bytes(uint8_t byte1, uint8_t byte2, uint8_t byte3)
 {
 	emitByte(byte1);
 	emitByte(byte2);
@@ -177,7 +186,7 @@ static uint8_t makeConstant(double value)
 
 static void emitConstant(double value)
 {
-	emitBytes(OP_CONSTANT, TYPEID_DEC, makeConstant(value));
+	emit3Bytes(OP_CONSTANT, TYPEID_DEC, makeConstant(value));
 }
 
 void literal()
@@ -220,10 +229,18 @@ void binary()
 
 	switch (operatorType)
 	{
-	case TOKEN_PLUS:          emitByte(OP_ADD); break;
-	case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
-	case TOKEN_STAR:          emitByte(OP_MULT); break;
-	case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
+	case TOKEN_PLUS:				emitByte(OP_ADD); break;
+	case TOKEN_MINUS:				emitByte(OP_SUBTRACT); break;
+	case TOKEN_STAR:				emitByte(OP_MULT); break;
+	case TOKEN_SLASH:				emitByte(OP_DIVIDE); break;
+	case TOKEN_EQUAL:				emitByte(OP_EQUAL); break;
+
+	case TOKEN_IS_NOT:				emit2Bytes(OP_IS, OP_NOT); break;
+	case TOKEN_IS:					emitByte(OP_IS); break;
+	case TOKEN_GREATER:				emitByte(OP_GREAT); break;
+	case TOKEN_GREATER_OR_EQUALS:	emit2Bytes(OP_LESS, OP_NOT); break;
+	case TOKEN_LESS:				emitByte(OP_LESS); break;
+	case TOKEN_LESS_OR_EQUALS:		emit2Bytes(OP_GREAT, OP_NOT); break;
 	default: return;
 	}
 }

@@ -16,7 +16,11 @@ typedef enum
 	OP_DIVIDE,
 	OP_TRUE,
 	OP_FALSE,
+	OP_EQUAL,
+	OP_IS,
 	OP_NOT,
+	OP_GREAT,
+	OP_LESS,
 	OP_RETURN,
 } OpCode;
 

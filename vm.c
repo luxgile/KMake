@@ -95,12 +95,12 @@ InterpretResult run()
 {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
-#define BINARY_OP(op) \
+#define BINARY_OP(op, intype, inid, outtype, outid) \
     do { \
-      double b = CAST(VM_Pop(TYPEID_DEC), double); \
-      double a = CAST(VM_Pop(TYPEID_DEC), double); \
-	  double result = a op b; \
-      VM_Push(&result, TYPEID_DEC); \
+      intype b = CAST(VM_Pop(inid), intype); \
+      intype a = CAST(VM_Pop(inid), intype); \
+	  outtype result = a op b; \
+      VM_Push(&result, outid); \
     } while (false)
 
 	for (;;)
@@ -116,11 +116,8 @@ InterpretResult run()
 			printf("[");
 			switch (type)
 			{
-			case 0:
-			{
-				double d = CAST(currentByte, double);
-				printf("%g", d);
-			}
+			case TYPEID_DEC: printf("%g", CAST(currentByte, double)); break;
+			case TYPEID_BOOL: printf("%s", CAST(currentByte, bool) ? "true" : "false"); break;
 			}
 			printf("]");
 			currentByte += TypeTable_GetTypeInfo(type)->size;
@@ -156,12 +153,24 @@ InterpretResult run()
 			break;
 		}
 
-		case OP_ADD:		BINARY_OP(+); break;
-		case OP_SUBTRACT:	BINARY_OP(-); break;
-		case OP_MULT:		BINARY_OP(*); break;
-		case OP_DIVIDE:		BINARY_OP(/); break;
+		case OP_ADD:		BINARY_OP(+, double, TYPEID_DEC, double, TYPEID_DEC); break;
+		case OP_SUBTRACT:	BINARY_OP(-, double, TYPEID_DEC, double, TYPEID_DEC); break;
+		case OP_MULT:		BINARY_OP(*, double, TYPEID_DEC, double, TYPEID_DEC); break;
+		case OP_DIVIDE:		BINARY_OP(/, double, TYPEID_DEC, double, TYPEID_DEC); break;
+
+		case OP_EQUAL:		BINARY_OP(== , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
+		case OP_GREAT:		BINARY_OP(> , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
+		case OP_LESS:		BINARY_OP(< , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
+
 		case OP_TRUE: { bool b = true; VM_Push(&b, TYPEID_BOOL); break; }
 		case OP_FALSE: { bool b = false; VM_Push(&b, TYPEID_BOOL); break; }
+
+		//Bug: IS cuts the rest of the operations
+		case OP_IS:
+		{
+			bool r = CAST(VM_Pop(TYPEID_BOOL), bool) == CAST(VM_Pop(TYPEID_BOOL), bool);
+			VM_Push(&r, TYPEID_BOOL);
+		}
 
 		case OP_RETURN:
 		{
