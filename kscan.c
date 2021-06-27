@@ -174,6 +174,7 @@ static TokenType identifierType()
 		}
 	}
 	case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
+	case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);
 	case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
 	case 'r': return checkKeyword(1, 2, "et", TOKEN_RETURN);
 	case 'b': return checkKeyword(1, 3, "ase", TOKEN_BASE);

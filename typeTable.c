@@ -10,24 +10,30 @@ void TypeTable_Init()
 	Global_TT.types = NULL;
 
 	//Dec = 0
+	TypeInfo voidInfo;
+	voidInfo.name = "Void";
+	voidInfo.size = 0;
+	TypeTable_AddType(voidInfo);
+
+	//Dec = 1
 	TypeInfo doubleInfo;
 	doubleInfo.name = "Dec";
 	doubleInfo.size = sizeof(double);
 	TypeTable_AddType(doubleInfo);
 
-	//Bool = 1
+	//Bool = 2
 	TypeInfo boolInfo;
 	boolInfo.name = "Bool";
 	boolInfo.size = sizeof(bool);
 	TypeTable_AddType(boolInfo);
 
-	//Bool = 2
+	//Bool = 3
 	TypeInfo pInfo;
 	pInfo.name = "Pointer";
 	pInfo.size = sizeof(Pointer);
 	TypeTable_AddType(pInfo);
 
-	//Bool = 3
+	//Bool = 4
 	TypeInfo stringInfo;
 	stringInfo.name = "String";
 	stringInfo.size = sizeof(StringPointer);

@@ -9,6 +9,7 @@
 typedef enum
 {
 	OP_CONSTANT,
+	OP_POP,
 	OP_NEGATE,
 	OP_ADD,
 	OP_SUBTRACT,
@@ -22,6 +23,9 @@ typedef enum
 	OP_GREAT,
 	OP_LESS,
 	OP_RETURN,
+
+	//TEMP
+	OP_PRINT,
 } OpCode;
 
 typedef struct

@@ -19,7 +19,10 @@ typedef enum {
 	TOKEN_IF, TOKEN_RETURN, TOKEN_BASE, TOKEN_THIS,
 	TOKEN_TRUE,
 
-	TOKEN_ERROR, TOKEN_EOF
+	TOKEN_ERROR, TOKEN_EOF,
+
+	//TEMP
+	TOKEN_PRINT,
 } TokenType;
 
 typedef struct

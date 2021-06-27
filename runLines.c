@@ -52,5 +52,5 @@ int getLine(RunLineArray* array, int offset)
 			return array->lines[i].line;
 	}
 	
-	exit(EXIT_FAILURE);
+	return -1;
 }

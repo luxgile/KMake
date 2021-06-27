@@ -38,6 +38,9 @@ typedef struct {
 void grouping();
 void unary();
 void binary();
+void expression();
+void statement();
+void declaration();
 void number();
 void literal();
 void string();

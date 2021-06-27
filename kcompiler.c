@@ -53,6 +53,11 @@ ParseRule parseRules[] = {
   [TOKEN_EOF] = {NULL,     NULL,   PREC_NONE},
 };
 
+static bool check(TokenType type)
+{
+	return parser.current.type == type;
+}
+
 static ByteCode* currentChunk()
 {
 	return compilingChunk;
@@ -105,6 +110,13 @@ static void advanceToken()
 
 		errorAtCurrent(parser.current.start);
 	}
+}
+
+static bool match(TokenType type)
+{
+	if (!check(type)) return false;
+	advanceToken();
+	return true;
 }
 
 static void parsePrecedence(Precedence precedence)
@@ -207,6 +219,44 @@ static void emitConstantPointer(BYTE* bytes, TYPE_ID id)
 	emit3Bytes(OP_CONSTANT, id, makeConstantPointer(bytes, id));
 }
 
+static void printStatement()
+{
+	expression();
+	consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+	emitByte(OP_PRINT);
+}
+
+static void expressionStatement() 
+{
+	expression();
+	consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
+	emitByte(OP_POP);
+}
+
+static void synchronize() 
+{
+	parser.isPanic = false;
+
+	while (parser.current.type != TOKEN_EOF) 
+	{
+		if (parser.previous.type == TOKEN_SEMICOLON) return;
+		switch (parser.current.type) 
+		{
+		case TOKEN_CLASS:
+		case TOKEN_IF:
+		case TOKEN_PRINT:
+		case TOKEN_RETURN:
+			return;
+
+		default:
+			; // Do nothing.
+		}
+
+		advance();
+	}
+}
+
+
 void literal()
 {
 	switch (parser.previous.type)
@@ -258,8 +308,8 @@ void binary()
 	case TOKEN_SLASH:				emitByte(OP_DIVIDE); break;
 	case TOKEN_EQUALS:				emitByte(OP_EQUALS); break;
 
-	//case TOKEN_IS_NOT:				emit2Bytes(OP_EQUAL, OP_NOT); break;
-	//case TOKEN_IS:					emitByte(OP_IS); break;	To define equality on types
+		//case TOKEN_IS_NOT:				emit2Bytes(OP_EQUAL, OP_NOT); break;
+		//case TOKEN_IS:					emitByte(OP_IS); break;	To define equality on types
 	case TOKEN_GREATER:				emitByte(OP_GREAT); break;
 	case TOKEN_GREATER_OR_EQUALS:	emit2Bytes(OP_LESS, OP_NOT); break;
 	case TOKEN_LESS:				emitByte(OP_LESS); break;
@@ -271,6 +321,25 @@ void binary()
 void expression()
 {
 	parsePrecedence(PREC_ASSIGNMENT);
+}
+
+void statement()
+{
+	if (match(TOKEN_PRINT))
+	{
+		printStatement();
+	}
+	else
+	{
+		expressionStatement();
+	}
+}
+
+void declaration()
+{
+	statement();
+
+	if (parser.isPanic) synchronize();
 }
 
 void grouping()
@@ -290,7 +359,10 @@ bool compile(const char* source, ByteCode* chunk)
 
 	advanceToken();
 
-	expression();
+	while (!match(TOKEN_EOF))
+	{
+		declaration();
+	}
 
 	consume(TOKEN_EOF, "Expect end of expression.");
 	endCompiler();

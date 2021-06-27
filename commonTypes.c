@@ -1,5 +1,6 @@
 #include "commonTypes.h"
 #include "kmem.h"
+#include "vm.h"
 #include <string.h>
 
 static Pointer* AllocateObject(size_t size, TYPE_ID type)
@@ -15,13 +16,14 @@ static StringPointer* AllocateString(char* chars, int length, uint32_t hash)
 	string->length = length;
 	string->base.p = chars;
 	string->hash = hash;
+	HashTable_Set(&vm.strings, string, chars, TYPEID_STRING);
 	return string;
 }
 
 static uint32_t HashString(const char* key, int length)
 {
 	uint32_t hash = 2166136261u;
-	for (int i = 0; i < length; i++) 
+	for (int i = 0; i < length; i++)
 	{
 		hash ^= (uint8_t)key[i];
 		hash *= 16777619;
@@ -35,5 +37,7 @@ StringPointer* CopyString(const char* chars, int length)
 	memcpy(heapChars, chars, length);
 	heapChars[length] = '\0';
 	uint32_t hash = HashString(chars, length);
-	return AllocateString(heapChars, length);
+	StringPointer* interned = HashTable_Find(&vm.strings, heapChars, length, hash);
+	if (interned != NULL) return interned;
+	return AllocateString(heapChars, length, hash);
 }

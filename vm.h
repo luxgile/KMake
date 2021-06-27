@@ -3,6 +3,7 @@
 #include "bytecode.h"
 #include "byteArray.h"
 #include "typeTable.h"
+#include "hashTable.h"
 
 #define STACK_MAX 1024
 
@@ -15,7 +16,10 @@ typedef struct
 	BYTE* stackTop;
 	BYTE stack[STACK_MAX];
 	TypeArray stackTypes;
+	HashTable strings;
 } VM;
+
+VM vm;
 
 typedef enum
 {

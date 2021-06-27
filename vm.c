@@ -10,9 +10,6 @@
 #include <stdarg.h>
 #include "commonTypes.h"
 
-VM vm;
-
-
 static void resetStack()
 {
 	vm.stackTop = vm.stack;
@@ -32,16 +29,28 @@ static void runtimeError(const char* format, ...)
 	resetStack();
 }
 
+static void printValue(BYTE* bytes, TYPE_ID type)
+{
+	switch (type)
+	{
+	case TYPEID_DEC: printf("%g", CAST(bytes, double)); break;
+	case TYPEID_BOOL: printf("%s", CAST(bytes, bool) ? "true" : "false"); break;
+	case TYPEID_STRING: printf("%s", (char*)CAST(bytes, StringPointer*)->base.p); break;
+	}
+}
+
 void initVM()
 {
 	resetStack();
 
 	TypeArray_Init(&vm.stackTypes);
+	HashTable_Init(&vm.strings);
 }
 
 void freeVM()
 {
 	TypeArray_Free(&vm.stackTypes);
+	HashTable_Free(&vm.strings);
 }
 
 void VM_Push(BYTE* bytes, TYPE_ID type)
@@ -100,12 +109,7 @@ static bool Equality()
 	{
 	case TYPEID_BOOL: return CAST(VM_Pop(TYPEID_BOOL), bool) == CAST(VM_Pop(TYPEID_BOOL), bool);
 	case TYPEID_DEC: return CAST(VM_Pop(TYPEID_DEC), double) == CAST(VM_Pop(TYPEID_DEC), double);
-	case TYPEID_STRING:
-	{
-		StringPointer* a = CAST(VM_Pop(TYPEID_STRING), StringPointer*);
-		StringPointer* b = CAST(VM_Pop(TYPEID_STRING), StringPointer*);
-		return a->length == b->length && memcmp(a->base.p, b->base.p, a->length) == 0;
-	}
+	case TYPEID_STRING: return CAST(VM_Pop(TYPEID_STRING), StringPointer*) == CAST(VM_Pop(TYPEID_STRING), StringPointer*);
 	}
 
 	return false;
@@ -130,6 +134,7 @@ InterpretResult run()
 
 		printf("\t\t");
 		BYTE* currentByte = &vm.stack;
+		int stackSize;
 		for (int i = 0; i < vm.stackTypes.count; i++)
 		{
 			TYPE_ID type = vm.stackTypes.types[i];
@@ -141,9 +146,12 @@ InterpretResult run()
 			case TYPEID_STRING: printf("%s", (char*)CAST(currentByte, StringPointer*)->base.p); break;
 			}
 			printf("]");
-			currentByte += TypeTable_GetTypeInfo(type)->size;
+			int typeSize = TypeTable_GetTypeInfo(type)->size;
+			printf("(%ub) / ", typeSize);
+			currentByte += typeSize;
 			type++;
 		}
+		printf("-> (%ub)", vm.stackTop - vm.stack);
 		printf("\n");
 		disassembleInstruction(vm.chunk, vm.ip - vm.chunk->code);
 #endif
@@ -188,17 +196,16 @@ InterpretResult run()
 
 					 //case OP_IS:			BINARY_OP(< , bool, TYPEID_BOOL, bool, TYPEID_BOOL); break;
 
-		case OP_RETURN:
+		case OP_PRINT:
 		{
-			switch (peekType())
-			{
-			case TYPEID_DEC: printf("%g", CAST(VM_Pop(TYPEID_DEC), double)); break;
-			case TYPEID_BOOL: printf("%s", CAST(VM_Pop(TYPEID_BOOL), bool) ? "true" : "false"); break;
-			case TYPEID_STRING: printf("%s", (char*)CAST(VM_Pop(TYPEID_STRING), StringPointer*)->base.p); break;
-			}
+			TYPE_ID type = peekType();
+			printValue(VM_Pop(type), type);
 			printf("\n");
-			return INTERPRET_OK;
+			break;
 		}
+
+		case OP_POP: VM_Pop(peekType()); break;
+		case OP_RETURN: return INTERPRET_OK;
 
 		}
 	}
