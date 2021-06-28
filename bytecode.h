@@ -9,6 +9,7 @@
 typedef enum
 {
 	OP_CONSTANT,
+	OP_DEFINE_GLOBAL,
 	OP_POP,
 	OP_NEGATE,
 	OP_ADD,

@@ -226,21 +226,21 @@ static void printStatement()
 	emitByte(OP_PRINT);
 }
 
-static void expressionStatement() 
+static void expressionStatement()
 {
 	expression();
 	consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
 	emitByte(OP_POP);
 }
 
-static void synchronize() 
+static void synchronize()
 {
 	parser.isPanic = false;
 
-	while (parser.current.type != TOKEN_EOF) 
+	while (parser.current.type != TOKEN_EOF)
 	{
 		if (parser.previous.type == TOKEN_SEMICOLON) return;
-		switch (parser.current.type) 
+		switch (parser.current.type)
 		{
 		case TOKEN_CLASS:
 		case TOKEN_IF:
@@ -252,10 +252,46 @@ static void synchronize()
 			; // Do nothing.
 		}
 
-		advance();
+		advanceToken();
 	}
 }
 
+static uint8_t identifierConstant(TYPE_ID type, Token* name)
+{
+	StringPointer* string = CopyString(name->start, name->length);
+	return makeConstantPointer(string, type);
+}
+
+static void defineVariable(TYPE_ID type, uint8_t global) 
+{
+	emit3Bytes(OP_DEFINE_GLOBAL, global, type);
+}
+
+static uint8_t parseVariable(TYPE_ID type, const char* errorMessage) 
+{
+	consume(TOKEN_IDENTIFIER, errorMessage);
+	return identifierConstant(type , &parser.previous);
+}
+
+static void varDeclaration(TYPE_ID type) 
+{
+	uint8_t global = parseVariable(type, "Expect variable name.");
+
+	if (match(TOKEN_EQUALS))
+	{
+		expression();
+	}
+
+	consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+
+	defineVariable(type, global);
+}
+
+//static void namedVariable(Token name) 
+//{
+//	uint8_t arg = identifierConstant(&name);
+//	emitBytes(OP_GET_GLOBAL, arg);
+//}
 
 void literal()
 {
@@ -277,6 +313,11 @@ void number()
 	double value = strtod(parser.previous.start, NULL);
 	emitConstant(&value, TYPEID_DEC);
 }
+
+//void variable() 
+//{
+//	namedVariable(parser.previous);
+//}
 
 void unary()
 {
@@ -337,7 +378,18 @@ void statement()
 
 void declaration()
 {
-	statement();
+	if (match(TOKEN_IDENTIFIER))
+	{
+		TYPE_ID type = TypeTable_GetTypeId(parser.previous.start, parser.previous.length);
+		if (type != TYPEID_VOID)
+			varDeclaration(type);
+		else
+			errorAtCurrent("%s is not defined.", TypeTable_GetTypeInfo(type)->name);
+	}
+	else
+	{
+		statement();
+	}
 
 	if (parser.isPanic) synchronize();
 }

@@ -56,6 +56,7 @@ int disassembleInstruction(ByteCode* chunk, int offset)
 
 
 	case OP_CONSTANT: return constantInstruction("OP_CONSTANT", chunk, offset);
+	case OP_DEFINE_GLOBAL: return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
 
 	case OP_ADD: return simpleInstruction("OP_ADD", chunk, offset);
 	case OP_SUBTRACT: return simpleInstruction("OP_SUBSTRACT", chunk, offset);

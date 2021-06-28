@@ -17,6 +17,7 @@ typedef struct
 	BYTE stack[STACK_MAX];
 	TypeArray stackTypes;
 	HashTable strings;
+	HashTable globals;
 } VM;
 
 VM vm;

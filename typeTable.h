@@ -24,7 +24,6 @@ typedef struct
 {
 	char* name;
 	int size;
-	DebugValueFn Debug;
 } TypeInfo;
 
 typedef struct
@@ -46,7 +45,7 @@ TypeTable Global_TT;
 void TypeTable_Init();
 TYPE_ID TypeTable_AddType(TypeInfo byte);
 TypeInfo* TypeTable_GetTypeInfo(TYPE_ID id);
-int TypeTable_GetTypeId(char* name);
+TYPE_ID TypeTable_GetTypeId(char* name, int length);
 void TypeTable_Free();
 
 

@@ -45,12 +45,14 @@ void initVM()
 
 	TypeArray_Init(&vm.stackTypes);
 	HashTable_Init(&vm.strings);
+	HashTable_Init(&vm.globals);
 }
 
 void freeVM()
 {
 	TypeArray_Free(&vm.stackTypes);
 	HashTable_Free(&vm.strings);
+	HashTable_Free(&vm.globals);
 }
 
 void VM_Push(BYTE* bytes, TYPE_ID type)
@@ -64,6 +66,8 @@ void VM_Push(BYTE* bytes, TYPE_ID type)
 
 BYTE* VM_Pop(TYPE_ID type)
 {
+	if (type == TYPEID_VOID) return NULL;
+
 	TypeArray_RemoveType(&vm.stackTypes, type);
 
 	vm.stackTop -= TypeTable_GetTypeInfo(type)->size;
@@ -118,7 +122,6 @@ static bool Equality()
 InterpretResult run()
 {
 #define READ_BYTE() (*vm.ip++)
-#define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define BINARY_OP(op, intype, inid, outtype, outid) \
     do { \
       intype b = CAST(VM_Pop(inid), intype); \
@@ -126,6 +129,10 @@ InterpretResult run()
 	  outtype result = a op b; \
       VM_Push(&result, outid); \
     } while (false)
+
+#ifdef DEBUG_TRACE_EXECUTION
+	printf("\n== Stack Debug ==\n");
+#endif
 
 	for (;;)
 	{
@@ -141,6 +148,7 @@ InterpretResult run()
 			printf("[");
 			switch (type)
 			{
+			case TYPEID_VOID: printf("void"); break;
 			case TYPEID_DEC: printf("%g", CAST(currentByte, double)); break;
 			case TYPEID_BOOL: printf("%s", CAST(currentByte, bool) ? "true" : "false"); break;
 			case TYPEID_STRING: printf("%s", (char*)CAST(currentByte, StringPointer*)->base.p); break;
@@ -165,6 +173,15 @@ InterpretResult run()
 			TYPE_ID type = READ_BYTE();
 			BYTE* bytes = ByteArray_ReadByte(&vm.chunk->constants, READ_BYTE());
 			VM_Push(bytes, type);
+			break;
+		}
+
+		case OP_DEFINE_GLOBAL:
+		{
+			StringPointer* name = ByteArray_Read(&vm.chunk->constants, StringPointer*, READ_BYTE());
+			TYPE_ID type = READ_BYTE();
+			uint8_t varId = READ_BYTE();
+			HashTable_Set(&vm.globals, name, &varId, TYPEID_BOOL);
 			break;
 		}
 
@@ -211,6 +228,5 @@ InterpretResult run()
 	}
 
 #undef READ_BYTE
-#undef READ_CONSTANT
 #undef BINARY_OP
 }

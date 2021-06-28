@@ -59,9 +59,15 @@ TypeInfo* TypeTable_GetTypeInfo(TYPE_ID id)
 	return &Global_TT.types[id];
 }
 
-int TypeTable_GetTypeId(char* name)
+TYPE_ID TypeTable_GetTypeId(char* name, int length)
 {
-	return 0;
+	for (size_t i = 0; i < Global_TT.count; i++)
+	{
+		if (memcmp(Global_TT.types[i].name, name, length) == 0)
+			return i;
+	}
+
+	return TYPEID_VOID;
 }
 
 void TypeTable_Free()
