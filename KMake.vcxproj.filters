@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Scanner">
+      <UniqueIdentifier>{f6aec279-7ba8-423a-8537-9ce10c41a908}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Compiler">
+      <UniqueIdentifier>{aa7b52c0-8306-4b99-873f-37c0a894b7dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VM">
+      <UniqueIdentifier>{cf114f5f-1e20-4ddf-b75e-019c6967a561}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Collections">
+      <UniqueIdentifier>{5b198087-23f7-4210-a78c-16bd9c58a4bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kmem.c">
@@ -25,9 +37,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="kdebug.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="values.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="runLines.c">
@@ -57,11 +66,11 @@
     <ClCompile Include="hashTable.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kparser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bytecode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -71,32 +80,32 @@
     <ClInclude Include="kdebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="values.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="runLines.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="kscan.h">
+      <Filter>Header Files\Scanner</Filter>
     </ClInclude>
     <ClInclude Include="vm.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\VM</Filter>
     </ClInclude>
     <ClInclude Include="kcompiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kscan.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Compiler</Filter>
     </ClInclude>
     <ClInclude Include="byteArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="typeTable.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Collections</Filter>
     </ClInclude>
     <ClInclude Include="hashTable.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Collections</Filter>
+    </ClInclude>
+    <ClInclude Include="typeTable.h">
+      <Filter>Header Files\Collections</Filter>
+    </ClInclude>
+    <ClInclude Include="runLines.h">
+      <Filter>Header Files\Collections</Filter>
+    </ClInclude>
+    <ClInclude Include="bytecode.h">
+      <Filter>Header Files\Compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="kparser.h">
+      <Filter>Header Files\Compiler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

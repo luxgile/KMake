@@ -7,14 +7,14 @@
 ((capacity) < 8 ? 8 : (capacity)*2)
 
 #define GROW_ARRAY(type, pointer, oldCount, newCount) \
-    (type *)reallocate(pointer, sizeof(type) * (oldCount), sizeof(type) * (newCount))
+    (type *)kmem_reallocate(pointer, sizeof(type) * (oldCount), sizeof(type) * (newCount))
 
 #define FREE_ARRAY(type, pointer, oldCount) \
-    reallocate(pointer, sizeof(type) * (oldCount), 0);
+    kmem_reallocate(pointer, sizeof(type) * (oldCount), 0);
 
 #define ALLOCATE(type, count) \
-    (type*)reallocate(NULL, 0, sizeof(type) * (count))
+    (type*)kmem_reallocate(NULL, 0, sizeof(type) * (count))
 
-void* reallocate(void* pointer, size_t oldCount, size_t newCount);
+void* kmem_reallocate(void* pointer, size_t oldCount, size_t newCount);
 
 #endif

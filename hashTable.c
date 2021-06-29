@@ -74,7 +74,7 @@ void HashTable_Free(HashTable* ht)
 	HashTable_Init(ht);
 }
 
-void HashTable_Set(HashTable* ht, StringPointer* key, BYTE* bytes, TYPE_ID type)
+void HashTable_Set(HashTable* ht, StringPointer* key, Byte1* bytes, TYPE_ID type)
 {
 	if (ht->count + 1 > ht->capacity * TABLE_MAX_LOAD)
 	{
@@ -92,7 +92,7 @@ void HashTable_Set(HashTable* ht, StringPointer* key, BYTE* bytes, TYPE_ID type)
 	return isNewKey;
 }
 
-bool HashTable_Get(HashTable* table, StringPointer* key, BYTE* bytes, TYPE_ID* type)
+bool HashTable_Get(HashTable* table, StringPointer* key, Byte1* bytes, TYPE_ID* type)
 {
 	if (table->count == 0) return false;
 

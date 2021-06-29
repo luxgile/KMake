@@ -19,13 +19,10 @@ typedef enum
 	OP_TRUE,
 	OP_FALSE,
 	OP_EQUALS,
-	//OP_IS,
 	OP_NOT,
 	OP_GREAT,
 	OP_LESS,
 	OP_RETURN,
-
-	//TEMP
 	OP_PRINT,
 } OpCode;
 
@@ -39,10 +36,10 @@ typedef struct
 	RunLineArray lines;
 } ByteCode;
 
-void ByteCode_InitChunk(ByteCode* chunk);
-void ByteCode_WriteChunk(ByteCode* chunk, uint8_t code, int line);
-int ByteCode_AddConstant(ByteCode* chunk, TYPE_ID id, BYTE* value);
-int ByteCode_AddConstantPointer(ByteCode* chunk, TYPE_ID id, BYTE* value);
-void ByteCode_FreeChunk(ByteCode* chunk);
+void bytec_init_chunk(ByteCode* chunk);
+void bytec_write(ByteCode* chunk, uint8_t code, int line);
+int bytec_add_c(ByteCode* chunk, TYPE_ID id, Byte1* value);
+int bytec_add_cp(ByteCode* chunk, TYPE_ID id, Byte1* value);
+void bytec_free(ByteCode* chunk);
 
 #endif

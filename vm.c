@@ -29,7 +29,7 @@ static void runtimeError(const char* format, ...)
 	resetStack();
 }
 
-static void printValue(BYTE* bytes, TYPE_ID type)
+static void printValue(Byte1* bytes, TYPE_ID type)
 {
 	switch (type)
 	{
@@ -55,7 +55,7 @@ void freeVM()
 	HashTable_Free(&vm.globals);
 }
 
-void VM_Push(BYTE* bytes, TYPE_ID type)
+void VM_Push(Byte1* bytes, TYPE_ID type)
 {
 	TypeArray_AddType(&vm.stackTypes, type);
 
@@ -64,7 +64,7 @@ void VM_Push(BYTE* bytes, TYPE_ID type)
 	vm.stackTop += size;
 }
 
-BYTE* VM_Pop(TYPE_ID type)
+Byte1* VM_Pop(TYPE_ID type)
 {
 	if (type == TYPEID_VOID) return NULL;
 
@@ -73,7 +73,7 @@ BYTE* VM_Pop(TYPE_ID type)
 	vm.stackTop -= TypeTable_GetTypeInfo(type)->size;
 	return vm.stackTop;
 }
-BYTE* VM_PopPointer(TYPE_ID type)
+Byte1* VM_PopPointer(TYPE_ID type)
 {
 	TypeArray_RemoveType(&vm.stackTypes, type);
 
@@ -89,11 +89,11 @@ static TYPE_ID peekType()
 InterpretResult interpret(const char* source)
 {
 	ByteCode c;
-	ByteCode_InitChunk(&c);
+	bytec_init_chunk(&c);
 
-	if (!compile(source, &c))
+	if (!kcom_compile(source, &c))
 	{
-		ByteCode_FreeChunk(&c);
+		bytec_free(&c);
 		return INTERPRET_COMPILE_ERROR;
 	}
 
@@ -102,7 +102,7 @@ InterpretResult interpret(const char* source)
 
 	InterpretResult result = run();
 
-	ByteCode_FreeChunk(&c);
+	bytec_free(&c);
 	return result;
 	//return run();
 }
@@ -140,7 +140,7 @@ InterpretResult run()
 #ifdef DEBUG_TRACE_EXECUTION
 
 		printf("\t\t");
-		BYTE* currentByte = &vm.stack;
+		Byte1* currentByte = &vm.stack;
 		int stackSize;
 		for (int i = 0; i < vm.stackTypes.count; i++)
 		{
@@ -161,7 +161,7 @@ InterpretResult run()
 		}
 		printf("-> (%ub)", vm.stackTop - vm.stack);
 		printf("\n");
-		disassembleInstruction(vm.chunk, vm.ip - vm.chunk->code);
+		debug_disassemble_opcode(vm.chunk, vm.ip - vm.chunk->code);
 #endif
 
 		uint8_t instruction;
@@ -171,7 +171,7 @@ InterpretResult run()
 		case OP_CONSTANT:
 		{
 			TYPE_ID type = READ_BYTE();
-			BYTE* bytes = ByteArray_ReadByte(&vm.chunk->constants, READ_BYTE());
+			Byte1* bytes = ByteArray_ReadByte(&vm.chunk->constants, READ_BYTE());
 			VM_Push(bytes, type);
 			break;
 		}

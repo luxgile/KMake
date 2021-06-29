@@ -3,7 +3,7 @@
 #include "byteArray.h"
 
 typedef uint8_t TYPE_ID;
-typedef void (*DebugValueFn)(BYTE* bytes);
+typedef void (*DebugValueFn)(Byte1* bytes);
 
 #define TYPEID_VOID 0
 #define IS_VOID(type) type == TYPEID_VOID

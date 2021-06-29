@@ -2,7 +2,7 @@
 #include "bytecode.h"
 #include "kmem.h"
 
-void ByteCode_InitChunk(ByteCode* chunk)
+void bytec_init_chunk(ByteCode* chunk)
 {
 	chunk->count = 0;
 	chunk->capacity = 0;
@@ -13,7 +13,7 @@ void ByteCode_InitChunk(ByteCode* chunk)
 	initLinesArray(&chunk->lines);
 }
 
-void ByteCode_WriteChunk(ByteCode* chunk, uint8_t byte, int line)
+void bytec_write(ByteCode* chunk, uint8_t byte, int line)
 {
 	if (chunk->capacity < chunk->count + 1)
 	{
@@ -28,7 +28,7 @@ void ByteCode_WriteChunk(ByteCode* chunk, uint8_t byte, int line)
 	chunk->count++;
 }
 
-int ByteCode_AddConstant(ByteCode* chunk, TYPE_ID id, BYTE* value)
+int bytec_add_c(ByteCode* chunk, TYPE_ID id, Byte1* value)
 {
 	TypeInfo* type = TypeTable_GetTypeInfo(id);
 	ByteArray_AddBytes(&chunk->constants, value, type->size);
@@ -36,7 +36,7 @@ int ByteCode_AddConstant(ByteCode* chunk, TYPE_ID id, BYTE* value)
 	return chunk->constants.count - type->size;
 }
 
-int ByteCode_AddConstantPointer(ByteCode* chunk, TYPE_ID id, BYTE* pointer)
+int bytec_add_cp(ByteCode* chunk, TYPE_ID id, Byte1* pointer)
 {
 	size_t size = sizeof(void*);
 	ByteArray_AddBytes(&chunk->constants, &pointer, size);
@@ -44,7 +44,7 @@ int ByteCode_AddConstantPointer(ByteCode* chunk, TYPE_ID id, BYTE* pointer)
 	return chunk->constants.count - size;
 }
 
-void ByteCode_FreeChunk(ByteCode* chunk)
+void bytec_free(ByteCode* chunk)
 {
 	FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
 	ByteArray_Free(&chunk->constants);

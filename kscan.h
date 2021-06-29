@@ -33,6 +33,7 @@ typedef struct
 	int line;
 } Token;
 
+//Creates tokens out of a source.
 typedef struct
 {
 	const char* start;
@@ -40,8 +41,5 @@ typedef struct
 	int line;
 } Scanner;
 
-
-Scanner scanner;
-
-void initScanner(const char* source);
-Token scanToken();
+void scan_init(Scanner* scanner, const char* source);
+Token scan_next_token(Scanner* scanner);

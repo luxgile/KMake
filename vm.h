@@ -13,8 +13,8 @@ typedef struct
 {
 	ByteCode* chunk;
 	uint8_t* ip;
-	BYTE* stackTop;
-	BYTE stack[STACK_MAX];
+	Byte1* stackTop;
+	Byte1 stack[STACK_MAX];
 	TypeArray stackTypes;
 	HashTable strings;
 	HashTable globals;
@@ -31,8 +31,8 @@ typedef enum
 
 void initVM();
 void freeVM();
-void VM_Push(BYTE* bytes, TYPE_ID type);
-BYTE* VM_Pop(TYPE_ID type);
+void VM_Push(Byte1* bytes, TYPE_ID type);
+Byte1* VM_Pop(TYPE_ID type);
 
 InterpretResult interpret(const char* source);
 InterpretResult run();

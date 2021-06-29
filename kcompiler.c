@@ -7,8 +7,18 @@
 #include "bytecode.h"
 #include "commonTypes.h"
 
+void read_grouping(KCompiler* compiler);
+void read_unary(KCompiler* compiler);
+void read_binary(KCompiler* compiler);
+void read_expression(KCompiler* compiler);
+void read_statement(KCompiler* compiler);
+void read_declaration(KCompiler* compiler);
+void read_number(KCompiler* compiler);
+void read_literal(KCompiler* compiler);
+void read_string(KCompiler* compiler);
+
 ParseRule parseRules[] = {
-  [TOKEN_LEFT_PAREN] = {grouping, NULL,   PREC_NONE},
+  [TOKEN_LEFT_PAREN] = {read_grouping, NULL,   PREC_NONE},
   [TOKEN_RIGHT_PAREN] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_LEFT_BRACE] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RIGHT_BRACE] = {NULL,     NULL,   PREC_NONE},
@@ -16,27 +26,27 @@ ParseRule parseRules[] = {
   [TOKEN_DOT] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SEMICOLON] = {NULL,     NULL,   PREC_NONE},
 
-  [TOKEN_MINUS] = {unary,    binary, PREC_TERM},
-  [TOKEN_PLUS] = {NULL,     binary, PREC_TERM},
-  [TOKEN_SLASH] = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_STAR] = {NULL,     binary, PREC_FACTOR},
+  [TOKEN_MINUS] = {read_unary,    read_binary, PREC_TERM},
+  [TOKEN_PLUS] = {NULL,     read_binary, PREC_TERM},
+  [TOKEN_SLASH] = {NULL,     read_binary, PREC_FACTOR},
+  [TOKEN_STAR] = {NULL,     read_binary, PREC_FACTOR},
 
   //[TOKEN_IS] = {NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_NOT] = {unary,     binary,   PREC_NONE},
+  [TOKEN_NOT] = {read_unary,     read_binary,   PREC_NONE},
   //[TOKEN_IS_NOT] = {NULL,     binary,   PREC_EQUALITY},
-  [TOKEN_EQUALS] = {NULL,     binary,   PREC_EQUALITY},
-  [TOKEN_GREATER] = {NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_GREATER_OR_EQUALS] = {NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_LESS] = {NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_LESS_OR_EQUALS] = {NULL,     binary,   PREC_COMPARISON},
+  [TOKEN_EQUALS] = {NULL,     read_binary,   PREC_EQUALITY},
+  [TOKEN_GREATER] = {NULL,     read_binary,   PREC_COMPARISON},
+  [TOKEN_GREATER_OR_EQUALS] = {NULL,     read_binary,   PREC_COMPARISON},
+  [TOKEN_LESS] = {NULL,     read_binary,   PREC_COMPARISON},
+  [TOKEN_LESS_OR_EQUALS] = {NULL,     read_binary,   PREC_COMPARISON},
 
   [TOKEN_IDENTIFIER] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_STRING] = {string,     NULL,   PREC_NONE},
-  [TOKEN_NUMBER] = {number,   NULL,   PREC_NONE},
+  [TOKEN_STRING] = {read_string,     NULL,   PREC_NONE},
+  [TOKEN_NUMBER] = {read_number,   NULL,   PREC_NONE},
   [TOKEN_AND] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_CLASS] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ELSE] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_FALSE] = {literal,     NULL,   PREC_NONE},
+  [TOKEN_FALSE] = {read_literal,     NULL,   PREC_NONE},
   //[TOKEN_FOR]				= {NULL,     NULL,   PREC_NONE},
   [TOKEN_METHOD] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_IF] = {NULL,     NULL,   PREC_NONE},
@@ -46,22 +56,12 @@ ParseRule parseRules[] = {
   [TOKEN_RETURN] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_BASE] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_THIS] = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_TRUE] = {literal,     NULL,   PREC_NONE},
+  [TOKEN_TRUE] = {read_literal,     NULL,   PREC_NONE},
   //[TOKEN_VAR]				= {NULL,     NULL,   PREC_NONE},
   //[TOKEN_WHILE]			= {NULL,     NULL,   PREC_NONE},
   [TOKEN_ERROR] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EOF] = {NULL,     NULL,   PREC_NONE},
 };
-
-static bool check(TokenType type)
-{
-	return parser.current.type == type;
-}
-
-static ByteCode* currentChunk()
-{
-	return compilingChunk;
-}
 
 static ParseRule* getRule(TokenType type)
 {
@@ -105,7 +105,7 @@ static void advanceToken()
 
 	while (true)
 	{
-		parser.current = scanToken();
+		parser.current = scan_next_token();
 		if (parser.current.type != TOKEN_ERROR) break;
 
 		errorAtCurrent(parser.current.start);
@@ -114,7 +114,7 @@ static void advanceToken()
 
 static bool match(TokenType type)
 {
-	if (!check(type)) return false;
+	if (!check_curr_type(type)) return false;
 	advanceToken();
 	return true;
 }
@@ -150,42 +150,43 @@ static void consume(TokenType type, const char* message)
 	errorAtCurrent(message);
 }
 
-static void emitByte(uint8_t byte)
+void emit_byte(KCompiler* compiler, Byte1 byte)
 {
-	ByteCode_WriteChunk(currentChunk(), byte, parser.previous.line);
+	bytec_write(compiler->bytec, byte, compiler->parser.previous.line);
 }
 
-static void emit2Bytes(uint8_t byte1, uint8_t byte2)
+void emit_2bytes(KCompiler* compiler, Byte2 bytes)
 {
-	emitByte(byte1);
-	emitByte(byte2);
+	emit_byte(compiler, bytes >> 8);
+	emit_byte(compiler, bytes);
 }
 
-static void emit3Bytes(uint8_t byte1, uint8_t byte2, uint8_t byte3)
+void emit_4bytes(KCompiler* compiler, Byte4 bytes)
 {
-	emitByte(byte1);
-	emitByte(byte2);
-	emitByte(byte3);
+	emit_byte(compiler, bytes >> 24);
+	emit_byte(compiler, bytes >> 16);
+	emit_byte(compiler, bytes >> 8);
+	emit_byte(compiler, bytes);
 }
 
-static void emitReturn()
+void emitReturn(KCompiler* compiler)
 {
-	emitByte(OP_RETURN);
+	emit_byte(compiler, OP_RETURN);
 }
 
-static void endCompiler()
+void kcom_end(KCompiler* compiler)
 {
-	emitReturn();
+	emitReturn(compiler);
 
 #ifdef DEBUG_PRINT_CODE
-	if (!parser.hadError)
+	if (!compiler->parser.hadError)
 	{
-		disassembleChunk(currentChunk(), "Compiled Bytecode");
+		debug_disassemble_bytec(compiler->bytec, "Compiled Bytecode");
 	}
 #endif
 }
 
-static uint8_t makeConstant(BYTE* byte, TYPE_ID id)
+static uint8_t make_const(Byte1* byte, TYPE_ID id)
 {
 	int constant = ByteCode_AddConstant(currentChunk(), id, byte);
 	if (constant > UINT8_MAX)
@@ -197,7 +198,7 @@ static uint8_t makeConstant(BYTE* byte, TYPE_ID id)
 	return (uint8_t)constant;
 }
 
-static uint8_t makeConstantPointer(BYTE* byte, TYPE_ID id)
+static uint8_t make_constp(Byte1* byte, TYPE_ID id)
 {
 	int constant = ByteCode_AddConstantPointer(currentChunk(), id, byte);
 	if (constant > UINT8_MAX)
@@ -209,28 +210,28 @@ static uint8_t makeConstantPointer(BYTE* byte, TYPE_ID id)
 	return (uint8_t)constant;
 }
 
-static void emitConstant(BYTE* bytes, TYPE_ID id)
+static void emitConstant(Byte1* bytes, TYPE_ID id)
 {
-	emit3Bytes(OP_CONSTANT, id, makeConstant(bytes, id));
+	emit3Bytes(OP_CONSTANT, id, make_const(bytes, id));
 }
 
-static void emitConstantPointer(BYTE* bytes, TYPE_ID id)
+static void emitConstantPointer(Byte1* bytes, TYPE_ID id)
 {
-	emit3Bytes(OP_CONSTANT, id, makeConstantPointer(bytes, id));
+	emit3Bytes(OP_CONSTANT, id, make_constp(bytes, id));
 }
 
 static void printStatement()
 {
-	expression();
+	read_expression();
 	consume(TOKEN_SEMICOLON, "Expect ';' after value.");
-	emitByte(OP_PRINT);
+	emit_byte(OP_PRINT);
 }
 
 static void expressionStatement()
 {
-	expression();
+	read_expression();
 	consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
-	emitByte(OP_POP);
+	emit_byte(OP_POP);
 }
 
 static void synchronize()
@@ -259,27 +260,27 @@ static void synchronize()
 static uint8_t identifierConstant(TYPE_ID type, Token* name)
 {
 	StringPointer* string = CopyString(name->start, name->length);
-	return makeConstantPointer(string, type);
+	return make_constp(string, type);
 }
 
-static void defineVariable(TYPE_ID type, uint8_t global) 
+static void defineVariable(TYPE_ID type, uint8_t global)
 {
 	emit3Bytes(OP_DEFINE_GLOBAL, global, type);
 }
 
-static uint8_t parseVariable(TYPE_ID type, const char* errorMessage) 
+static uint8_t parseVariable(TYPE_ID type, const char* errorMessage)
 {
 	consume(TOKEN_IDENTIFIER, errorMessage);
-	return identifierConstant(type , &parser.previous);
+	return identifierConstant(type, &parser.previous);
 }
 
-static void varDeclaration(TYPE_ID type) 
+static void varDeclaration(TYPE_ID type)
 {
 	uint8_t global = parseVariable(type, "Expect variable name.");
 
 	if (match(TOKEN_EQUALS))
 	{
-		expression();
+		read_expression();
 	}
 
 	consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
@@ -293,24 +294,24 @@ static void varDeclaration(TYPE_ID type)
 //	emitBytes(OP_GET_GLOBAL, arg);
 //}
 
-void literal()
+void read_literal(KCompiler* compiler)
 {
-	switch (parser.previous.type)
+	switch (compiler->parser.previous.type)
 	{
-	case TOKEN_TRUE: emitByte(OP_TRUE); break;
-	case TOKEN_FALSE: emitByte(OP_FALSE); break;
+	case TOKEN_TRUE: emit_byte(OP_TRUE); break;
+	case TOKEN_FALSE: emit_byte(OP_FALSE); break;
 	}
 }
 
-void string()
+void read_string(KCompiler* compiler)
 {
-	StringPointer* s = CopyString(parser.previous.start + 1, parser.previous.length - 2);
+	StringPointer* s = CopyString(compiler->parser.previous.start + 1, compiler->parser.previous.length - 2);
 	emitConstantPointer(s, TYPEID_STRING);
 }
 
-void number()
+void read_number(KCompiler* compiler)
 {
-	double value = strtod(parser.previous.start, NULL);
+	double value = strtod(compiler->parser.previous.start, NULL);
 	emitConstant(&value, TYPEID_DEC);
 }
 
@@ -319,9 +320,9 @@ void number()
 //	namedVariable(parser.previous);
 //}
 
-void unary()
+void read_unary(KCompiler* compiler)
 {
-	TokenType operatorType = parser.previous.type;
+	TokenType operatorType = compiler->parser.previous.type;
 
 	// Compile the operand.
 	parsePrecedence(PREC_UNARY);
@@ -329,42 +330,42 @@ void unary()
 	// Emit the operator instruction.
 	switch (operatorType)
 	{
-	case TOKEN_MINUS: emitByte(OP_NEGATE); break;
-	case TOKEN_NOT: emitByte(OP_NOT); break;
+	case TOKEN_MINUS: emit_byte(OP_NEGATE); break;
+	case TOKEN_NOT: emit_byte(OP_NOT); break;
 	default: return;
 	}
 }
 
-void binary()
+void read_binary(KCompiler* compiler)
 {
-	TokenType operatorType = parser.previous.type;
+	TokenType operatorType = compiler->parser.previous.type;
 	ParseRule* rule = getRule(operatorType);
 	parsePrecedence((Precedence)(rule->precedence + 1));
 
 	switch (operatorType)
 	{
-	case TOKEN_PLUS:				emitByte(OP_ADD); break;
-	case TOKEN_MINUS:				emitByte(OP_SUBTRACT); break;
-	case TOKEN_STAR:				emitByte(OP_MULT); break;
-	case TOKEN_SLASH:				emitByte(OP_DIVIDE); break;
-	case TOKEN_EQUALS:				emitByte(OP_EQUALS); break;
+	case TOKEN_PLUS:				emit_byte(OP_ADD); break;
+	case TOKEN_MINUS:				emit_byte(OP_SUBTRACT); break;
+	case TOKEN_STAR:				emit_byte(OP_MULT); break;
+	case TOKEN_SLASH:				emit_byte(OP_DIVIDE); break;
+	case TOKEN_EQUALS:				emit_byte(OP_EQUALS); break;
 
 		//case TOKEN_IS_NOT:				emit2Bytes(OP_EQUAL, OP_NOT); break;
 		//case TOKEN_IS:					emitByte(OP_IS); break;	To define equality on types
-	case TOKEN_GREATER:				emitByte(OP_GREAT); break;
-	case TOKEN_GREATER_OR_EQUALS:	emit2Bytes(OP_LESS, OP_NOT); break;
-	case TOKEN_LESS:				emitByte(OP_LESS); break;
-	case TOKEN_LESS_OR_EQUALS:		emit2Bytes(OP_GREAT, OP_NOT); break;
+	case TOKEN_GREATER:				emit_byte(OP_GREAT); break;
+	case TOKEN_GREATER_OR_EQUALS:	emit_2bytes(OP_LESS, OP_NOT); break;
+	case TOKEN_LESS:				emit_byte(OP_LESS); break;
+	case TOKEN_LESS_OR_EQUALS:		emit_2bytes(OP_GREAT, OP_NOT); break;
 	default: return;
 	}
 }
 
-void expression()
+void read_expression(KCompiler* compiler)
 {
 	parsePrecedence(PREC_ASSIGNMENT);
 }
 
-void statement()
+void read_statement(KCompiler* compiler)
 {
 	if (match(TOKEN_PRINT))
 	{
@@ -376,11 +377,11 @@ void statement()
 	}
 }
 
-void declaration()
+void read_declaration(KCompiler* compiler)
 {
 	if (match(TOKEN_IDENTIFIER))
 	{
-		TYPE_ID type = TypeTable_GetTypeId(parser.previous.start, parser.previous.length);
+		TYPE_ID type = TypeTable_GetTypeId(compiler->parser.previous.start, compiler->parser.previous.length);
 		if (type != TYPEID_VOID)
 			varDeclaration(type);
 		else
@@ -388,35 +389,37 @@ void declaration()
 	}
 	else
 	{
-		statement();
+		read_statement(compiler);
 	}
 
-	if (parser.isPanic) synchronize();
+	if (compiler->parser.isPanic) synchronize();
 }
 
-void grouping()
+void read_grouping(KCompiler* compiler)
 {
-	expression();
+	read_expression(compiler);
 	consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
-bool compile(const char* source, ByteCode* chunk)
+bool kcom_compile(const char* source, ByteCode* chunk)
 {
-	compilingChunk = chunk;
+	KCompiler compiler;
+	compiler.chunk = chunk;
 
-	initScanner(source);
+	Scanner scanner;
+	scan_init(&scanner, source);
 
-	parser.hadError = false;
-	parser.isPanic = false;
+	compiler.parser.hadError = false;
+	compiler.parser.isPanic = false;
 
 	advanceToken();
 
 	while (!match(TOKEN_EOF))
 	{
-		declaration();
+		read_declaration(&compiler);
 	}
 
 	consume(TOKEN_EOF, "Expect end of expression.");
-	endCompiler();
-	return !parser.hadError;
+	kcom_end();
+	return !compiler.parser.hadError;
 }

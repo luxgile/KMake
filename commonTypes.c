@@ -5,7 +5,7 @@
 
 static Pointer* AllocateObject(size_t size, TYPE_ID type)
 {
-	Pointer* object = (Pointer*)reallocate(NULL, 0, size);
+	Pointer* object = (Pointer*)kmem_reallocate(NULL, 0, size);
 	object->type = type;
 	return object;
 }

@@ -8,4 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
+typedef uint8_t		Byte1;
+typedef uint16_t	Byte2;
+typedef uint32_t	Byte4;
+typedef uint64_t	Byte8;
+
 #endif 

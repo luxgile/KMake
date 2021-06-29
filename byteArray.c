@@ -11,26 +11,26 @@ void ByteArray_Init(ByteArray* array)
 	array->bytes = NULL;
 }
 
-void ByteArray_AddByte(ByteArray* array, BYTE byte)
+void ByteArray_AddByte(ByteArray* array, Byte1 byte)
 {
 	if (array->capacity < array->count + 1)
 	{
 		int oldCapacity = array->capacity;
 		array->capacity = GROW_CAPACITY(oldCapacity);
-		array->bytes = GROW_ARRAY(BYTE, array->bytes, oldCapacity, array->capacity);
+		array->bytes = GROW_ARRAY(Byte1, array->bytes, oldCapacity, array->capacity);
 	}
 
 	array->bytes[array->count] = byte;
 	array->count++;
 }
 
-void ByteArray_AddBytes(ByteArray* array, BYTE* bytes, int size)
+void ByteArray_AddBytes(ByteArray* array, Byte1* bytes, int size)
 {
 	if (array->capacity < array->count + size)
 	{
 		int oldCapacity = array->capacity;
 		array->capacity = GROW_CAPACITY(oldCapacity);
-		array->bytes = GROW_ARRAY(BYTE, array->bytes, oldCapacity, array->capacity);
+		array->bytes = GROW_ARRAY(Byte1, array->bytes, oldCapacity, array->capacity);
 		ByteArray_AddBytes(array, bytes, size);
 		return;
 	}

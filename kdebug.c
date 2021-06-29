@@ -3,13 +3,13 @@
 #include "runLines.h"
 #include "commonTypes.h"
 
-void disassembleChunk(ByteCode* chunk, const char* name)
+void debug_disassemble_bytec(ByteCode* chunk, const char* name)
 {
 	printf("== %s ==\n", name);
 
 	for (size_t i = 0; i < chunk->count;)
 	{
-		i = disassembleInstruction(chunk, i);
+		i = debug_disassemble_opcode(chunk, i);
 	}
 }
 
@@ -24,7 +24,7 @@ static int constantInstruction(const char* name, ByteCode* chunk, int offset)
 	//Get constant parameter
 	TYPE_ID type = chunk->code[offset + 1];
 	TypeInfo* typeInfo = TypeTable_GetTypeInfo(type);
-	BYTE constant = chunk->code[offset + 2];
+	Byte1 constant = chunk->code[offset + 2];
 
 	printf("%-16s %4d ", name, constant);
 	printf("%u '", typeInfo->size);
@@ -40,7 +40,7 @@ static int constantInstruction(const char* name, ByteCode* chunk, int offset)
 	return offset + 3;
 }
 
-int disassembleInstruction(ByteCode* chunk, int offset)
+int debug_disassemble_opcode(ByteCode* chunk, int offset)
 {
 	printf("%04d ", offset);
 

@@ -148,11 +148,11 @@
     <ClCompile Include="kcompiler.c" />
     <ClCompile Include="kdebug.c" />
     <ClCompile Include="kmem.c" />
+    <ClCompile Include="kparser.c" />
     <ClCompile Include="kscan.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="runLines.c" />
     <ClCompile Include="typeTable.c" />
-    <ClCompile Include="values.c" />
     <ClCompile Include="vm.c" />
   </ItemGroup>
   <ItemGroup>
@@ -163,11 +163,10 @@
     <ClInclude Include="kcompiler.h" />
     <ClInclude Include="kdebug.h" />
     <ClInclude Include="kmem.h" />
+    <ClInclude Include="kparser.h" />
     <ClInclude Include="kscan.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="runLines.h" />
     <ClInclude Include="typeTable.h" />
-    <ClInclude Include="values.h" />
     <ClInclude Include="vm.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
