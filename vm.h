@@ -2,6 +2,7 @@
 
 #include "bytecode.h"
 #include "byteArray.h"
+#include "byteStack.h"
 #include "typeTable.h"
 #include "hashTable.h"
 
@@ -13,18 +14,11 @@ typedef struct
 {
 	ByteCode* chunk;
 	uint8_t* ip;
-	Byte1* stackTop;
-	Byte1 stack[STACK_MAX];
+	ByteStack stack;
 	TypeArray stackTypes;
 	HashTable strings;
 	HashTable globals;
 } VM;
-
-typedef enum {
-	ERR_NONE,
-	ERR_STACK_OVERFLOW,
-	ERR_STACK_UNDERFLOW,
-} VMError;
 
 typedef enum
 {

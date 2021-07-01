@@ -6,6 +6,7 @@
 #include "kdebug.h"
 #include "bytecode.h"
 #include "commonTypes.h"
+#include "opcodes.h"
 
 void read_grouping(KCompiler* compiler);
 void read_unary(KCompiler* compiler);

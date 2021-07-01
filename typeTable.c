@@ -3,77 +3,77 @@
 #include <string.h>
 #include "kmem.h"
 
-void typetbl_init()
+void typetbl_init(TypeTable* table)
 {
-	Global_TT.count = 0;
-	Global_TT.capacity = 0;
-	Global_TT.types = NULL;
+	table->count = 0;
+	table->capacity = 0;
+	table->types = NULL;
 
 	//Dec = 0
 	TypeInfo voidInfo;
 	voidInfo.name = "Void";
 	voidInfo.size = 0;
-	typetbl_add(voidInfo);
+	typetbl_add(table, voidInfo);
 
 	//Dec = 1
 	TypeInfo doubleInfo;
 	doubleInfo.name = "Dec";
 	doubleInfo.size = sizeof(double);
-	typetbl_add(doubleInfo);
+	typetbl_add(table, doubleInfo);
 
 	//Bool = 2
 	TypeInfo boolInfo;
 	boolInfo.name = "Bool";
 	boolInfo.size = sizeof(bool);
-	typetbl_add(boolInfo);
+	typetbl_add(table, boolInfo);
 
 	//Bool = 3
 	TypeInfo pInfo;
 	pInfo.name = "Pointer";
 	pInfo.size = sizeof(Pointer);
-	typetbl_add(pInfo);
+	typetbl_add(table, pInfo);
 
 	//Bool = 4
 	TypeInfo stringInfo;
 	stringInfo.name = "String";
 	stringInfo.size = sizeof(StringPointer);
-	typetbl_add(stringInfo);
+	typetbl_add(table, stringInfo);
 }
 
-TYPE_ID typetbl_add(TypeInfo type)
+TYPE_ID typetbl_add(TypeTable* table, TypeInfo type)
 {
-	if (Global_TT.capacity < Global_TT.count + 1)
+	if (table->capacity < table->count + 1)
 	{
-		int oldCapacity = Global_TT.capacity;
-		Global_TT.capacity = GROW_CAPACITY(oldCapacity);
-		Global_TT.types = GROW_ARRAY(TypeInfo, Global_TT.types, oldCapacity, Global_TT.capacity);
+		int oldCapacity = table->capacity;
+		table->capacity = GROW_CAPACITY(oldCapacity);
+		table->types = GROW_ARRAY(TypeInfo, table->types, oldCapacity, table->capacity);
 	}
 
-	Global_TT.types[Global_TT.count] = type;
-	Global_TT.count++;
-	return Global_TT.count - 1;
+	table->types[table->count] = type;
+	table->count++;
+	return table->count - 1;
 }
 
-TypeInfo* typetbl_get_info(TYPE_ID id)
+TypeInfo* typetbl_get_info(TypeTable* table, TYPE_ID id)
 {
-	return &Global_TT.types[id];
+	return &table->types[id];
 }
 
-TYPE_ID typetbl_get_id(char* name, int length)
+TYPE_ID typetbl_get_id(TypeTable* table, char* name, int length)
 {
-	for (size_t i = 0; i < Global_TT.count; i++)
+	for (size_t i = 0; i < table->count; i++)
 	{
-		if (memcmp(Global_TT.types[i].name, name, length) == 0)
+		if (memcmp(table->types[i].name, name, length) == 0)
 			return i;
 	}
 
 	return TYPEID_VOID;
 }
 
-void typetbl_free()
+void typetbl_free(TypeTable* table)
 {
-	FREE_ARRAY(TypeInfo, Global_TT.types, Global_TT.capacity);
-	typetbl_init();
+	FREE_ARRAY(TypeInfo, table->types, table->capacity);
+	typetbl_init(table);
 }
 
 void typearr_init(TypeArray* typeArray)

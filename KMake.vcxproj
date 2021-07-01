@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="byteArray.c" />
     <ClCompile Include="bytecode.c" />
+    <ClCompile Include="byteStack.c" />
     <ClCompile Include="commonTypes.c" />
     <ClCompile Include="commonTypes.h" />
     <ClCompile Include="hashTable.c" />
@@ -166,6 +167,7 @@
     <ClInclude Include="kmem.h" />
     <ClInclude Include="kparser.h" />
     <ClInclude Include="kscan.h" />
+    <ClInclude Include="opcodes.h" />
     <ClInclude Include="runLines.h" />
     <ClInclude Include="typeTable.h" />
     <ClInclude Include="vm.h" />

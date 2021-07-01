@@ -3,11 +3,11 @@
 
 #define DEBUG_PRINT_CODE
 #define DEBUG_TRACE_EXECUTION
+#define DEBUG_SAFETY
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
 
 typedef uint8_t		Byte1;
 typedef uint16_t	Byte2;

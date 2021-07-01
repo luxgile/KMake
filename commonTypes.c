@@ -41,3 +41,25 @@ StringPointer* CopyString(const char* chars, int length)
 	if (interned != NULL) return interned;
 	return AllocateString(heapChars, length, hash);
 }
+
+bool ktype_equality(Byte1* a, Byte1* b, TYPE_ID type)
+{
+	switch (type)
+	{
+	case TYPEID_BOOL: return *(bool*)a == *(bool*)b;
+	case TYPEID_DEC: return *(double*)a == *(double*)b;
+	//case TYPEID_STRING: return *(double*)a == *(double*)b;
+	}
+
+	return false;
+}
+
+void ktype_print(Byte1* value, TYPE_ID type)
+{
+	switch (type)
+	{
+	case TYPEID_DEC: printf("%g", ktype_double(value)); break;
+	case TYPEID_BOOL: printf("%s", ktype_bool(value) ? "true" : "false"); break;
+	//case TYPEID_STRING: printf("%s", (char*)CAST(bytes, StringPointer*)->base.p); break;
+	}
+}

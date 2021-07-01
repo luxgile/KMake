@@ -8,7 +8,7 @@
 #include "byteArray.h"
 #include "vm.h"
 
-static void repl()
+static void repl(VM* vm)
 {
 	char line[1024];
 	for (;;)
@@ -20,18 +20,20 @@ static void repl()
 			break;
 		}
 
-		vm_interpret(line);
+		vm_interpret(vm, line);
 	}
 }
 
 int main(int argc, const char* argv[])
 {
-	vm_init();
-	typetbl_init();
+	VM vm;
+	TypeTable table;
+	vm_init(&vm);
+	typetbl_init(&table);
 
-	repl();
+	repl(&vm);
 
-	vm_free();
-	typetbl_free();
+	vm_free(&vm);
+	typetbl_free(&table);
 	return 0;
 }

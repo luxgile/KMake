@@ -7,7 +7,6 @@
 
 typedef void (*ParseFn)(KCompiler* compiler);
 
-
 typedef enum
 {
 	PREC_NONE,
