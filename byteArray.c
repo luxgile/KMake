@@ -40,6 +40,11 @@ void bytearr_addarr(ByteArray* array, Byte1* bytes, int size)
 	array->count += size;
 }
 
+inline Byte1* bytearr_read(ByteArray* array, int index)
+{
+	return &(array)->bytes[index];
+}
+
 void bytearr_free(ByteArray* array)
 {
 	FREE_ARRAY(uint8_t, array->bytes, array->capacity);

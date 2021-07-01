@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include "commonTypes.h"
 
+//create stack file
 static void resetStack()
 {
 	vm.stackTop = vm.stack;
@@ -69,20 +70,33 @@ VMError vm_push_bool(VM* vm, bool value)
 
 VMError _vm_push(VM* vm, Byte1* bytes, int size)
 {
-	memcpy(vm->stackTop, bytes, size);
+	if ((vm->stackTop - vm->stack) + size > STACK_MAX) return ERR_STACK_OVERFLOW;
+
+	//memcpy(vm->stackTop, bytes, size);
+	*vm->stackTop = *bytes;
 	vm->stackTop += size;
 	return ERR_NONE;
 }
 
-VMError _vm_pop(VM* vm, TYPE_ID type)
+VMError vm_pop_dec(VM* vm, double* out_value)
 {
-	if (type == TYPEID_VOID) return NULL;
-	asdasdasdasd
-		//add pop different methods
-	typearr_remove(&vm->stackTypes, type);
+	typearr_remove(&vm->stackTypes, TYPEID_DEC);
+	return _vm_pop(vm, sizeof(double), (Byte1*)out_value);
+}
 
-	vm->stackTop -= typetbl_get_info(type)->size;
-	return vm->stackTop;
+VMError vm_pop_bool(VM* vm, bool* out_value)
+{
+	typearr_remove(&vm->stackTypes, TYPEID_BOOL);
+	return _vm_pop(vm, sizeof(bool), (Byte1*)out_value);
+}
+
+VMError _vm_pop(VM* vm, int size, Byte1* out_bytes)
+{
+	if (vm->stackTop - vm->stack < size) return ERR_STACK_UNDERFLOW;
+
+	vm->stackTop -= size;
+	*out_bytes = *vm->stackTop;
+	return ERR_NONE;
 }
 
 static TYPE_ID vm_peek_type(VM* vm)
@@ -123,9 +137,14 @@ static bool Equality()
 	return false;
 }
 
-InterpretResult vm_run()
+inline Byte1* vm_read_ip(VM* vm)
 {
-#define READ_BYTE() (*vm.ip++)
+	return *vm->ip++;
+}
+
+InterpretResult vm_run(VM* vm)
+{
+#define READ_BYTE() (*vm->ip++)
 #define BINARY_OP(op, intype, inid, outtype, outid) \
     do { \
       intype b = CAST(vm_pop(inid), intype); \
@@ -138,17 +157,17 @@ InterpretResult vm_run()
 	printf("\n== Stack Debug ==\n");
 #endif
 
-	for (;;)
+	while(true)
 	{
 
 #ifdef DEBUG_TRACE_EXECUTION
 
 		printf("\t\t");
-		Byte1* currentByte = &vm.stack;
+		Byte1* currentByte = &vm->stack;
 		int stackSize;
-		for (int i = 0; i < vm.stackTypes.count; i++)
+		for (int i = 0; i < vm->stackTypes.count; i++)
 		{
-			TYPE_ID type = vm.stackTypes.types[i];
+			TYPE_ID type = vm->stackTypes.types[i];
 			printf("[");
 			switch (type)
 			{
@@ -163,9 +182,9 @@ InterpretResult vm_run()
 			currentByte += typeSize;
 			type++;
 		}
-		printf("-> (%ub)", vm.stackTop - vm.stack);
+		printf("-> (%ub)", vm->stackTop - vm->stack);
 		printf("\n");
-		debug_disassemble_opcode(vm.chunk, vm.ip - vm.chunk->code);
+		debug_disassemble_opcode(vm->chunk, vm->ip - vm->chunk->code);
 #endif
 
 		uint8_t instruction;
@@ -182,7 +201,7 @@ InterpretResult vm_run()
 
 		case OP_DEFINE_GLOBAL:
 		{
-			StringPointer* name = ByteArray_Read(&vm.chunk->constants, StringPointer*, READ_BYTE());
+			StringPointer* name = bytearr_read(&vm.chunk->constants, StringPointer*, READ_BYTE());
 			TYPE_ID type = READ_BYTE();
 			uint8_t varId = READ_BYTE();
 			HashTable_Set(&vm.globals, name, &varId, TYPEID_BOOL);

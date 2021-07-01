@@ -11,9 +11,9 @@ typedef struct
 } ByteArray;
 
 void bytearr_init(ByteArray* array);
+void bytearr_free(ByteArray* array);
 void bytearr_add(ByteArray* array, Byte1 byte);
 void bytearr_addarr(ByteArray* array, Byte1* bytes, int size);
-void bytearr_free(ByteArray* array);
+inline Byte1* bytearr_read(ByteArray* array, int size);
 
-#define ByteArray_Read(array, type, index) (*(type*)&(array)->bytes[index])
-#define ByteArray_ReadByte(array, index) &(array)->bytes[index]
+#define bytearr_read_type(array, type, index) ((type*)bytearr_read(array, index));
