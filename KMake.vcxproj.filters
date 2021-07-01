@@ -107,5 +107,8 @@
     <ClInclude Include="kparser.h">
       <Filter>Header Files\Compiler</Filter>
     </ClInclude>
+    <ClInclude Include="byteStack.h">
+      <Filter>Header Files\Collections</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
