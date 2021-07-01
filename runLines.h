@@ -15,7 +15,7 @@ typedef struct
 	RunLine* lines;
 } RunLineArray;
 
-void initLinesArray(RunLineArray* array);
-void writeLinesArray(RunLineArray* array, int line);
-int getLine(RunLineArray* array, int offset);
-void freeLinesArray(RunLineArray* array);
+void linearr_init(RunLineArray* array);
+void linearr_write(RunLineArray* array, int line);
+int linearr_get_line(RunLineArray* array, int offset);
+void linearr_free(RunLineArray* array);

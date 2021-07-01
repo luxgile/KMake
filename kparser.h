@@ -19,3 +19,5 @@ bool parser_check_curr_type(Parser* parser, TokenType type);
 void parser_adv_tkn(Parser* parser);
 void parser_sync(Parser* parser);
 void parser_precedence(Parser* parser, ParseRule* parseRules, Precedence precedence);
+void parser_advmatch_or_error(Parser* parser, TokenType type, const char* message);
+bool parser_advmatch(Parser* parser, TokenType type);

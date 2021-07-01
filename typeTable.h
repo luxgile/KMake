@@ -42,14 +42,13 @@ typedef struct
 
 TypeTable Global_TT;
 
-void TypeTable_Init();
-TYPE_ID TypeTable_AddType(TypeInfo byte);
-TypeInfo* TypeTable_GetTypeInfo(TYPE_ID id);
-TYPE_ID TypeTable_GetTypeId(char* name, int length);
-void TypeTable_Free();
+void typetbl_init();
+TYPE_ID typetbl_add(TypeInfo byte);
+TypeInfo* typetbl_get_info(TYPE_ID id);
+TYPE_ID typetbl_get_id(char* name, int length);
+void typetbl_free();
 
-
-void TypeArray_Init(TypeArray* typeArray);
-void TypeArray_AddType(TypeArray* typeArray, TYPE_ID type);
-void TypeArray_RemoveType(TypeArray* typeArray, TYPE_ID type);
-void TypeArray_Free(TypeArray* typeArray);
+void typearr_init(TypeArray* typeArray);
+void typearr_add(TypeArray* typeArray, TYPE_ID type);
+void typearr_remove(TypeArray* typeArray, TYPE_ID type);
+void typearr_free(TypeArray* typeArray);

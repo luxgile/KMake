@@ -20,18 +20,18 @@ static void repl()
 			break;
 		}
 
-		interpret(line);
+		vm_interpret(line);
 	}
 }
 
 int main(int argc, const char* argv[])
 {
-	initVM();
-	TypeTable_Init();
+	vm_init();
+	typetbl_init();
 
 	repl();
 
-	freeVM();
-	TypeTable_Free();
+	vm_free();
+	typetbl_free();
 	return 0;
 }

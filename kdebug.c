@@ -23,7 +23,7 @@ static int constantInstruction(const char* name, ByteCode* chunk, int offset)
 {
 	//Get constant parameter
 	TYPE_ID type = chunk->code[offset + 1];
-	TypeInfo* typeInfo = TypeTable_GetTypeInfo(type);
+	TypeInfo* typeInfo = typetbl_get_info(type);
 	Byte1 constant = chunk->code[offset + 2];
 
 	printf("%-16s %4d ", name, constant);
@@ -44,8 +44,8 @@ int debug_disassemble_opcode(ByteCode* chunk, int offset)
 {
 	printf("%04d ", offset);
 
-	if (offset > 0 && getLine(&chunk->lines, offset) == getLine(&chunk->lines, offset - 1)) printf("\t| ");
-	else printf("%4d ", getLine(&chunk->lines, offset));
+	if (offset > 0 && linearr_get_line(&chunk->lines, offset) == linearr_get_line(&chunk->lines, offset - 1)) printf("\t| ");
+	else printf("%4d ", linearr_get_line(&chunk->lines, offset));
 
 	uint8_t instruction = chunk->code[offset];
 	switch (instruction)

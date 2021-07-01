@@ -3,7 +3,7 @@
 #include <string.h>
 #include "kmem.h"
 
-void TypeTable_Init()
+void typetbl_init()
 {
 	Global_TT.count = 0;
 	Global_TT.capacity = 0;
@@ -13,34 +13,34 @@ void TypeTable_Init()
 	TypeInfo voidInfo;
 	voidInfo.name = "Void";
 	voidInfo.size = 0;
-	TypeTable_AddType(voidInfo);
+	typetbl_add(voidInfo);
 
 	//Dec = 1
 	TypeInfo doubleInfo;
 	doubleInfo.name = "Dec";
 	doubleInfo.size = sizeof(double);
-	TypeTable_AddType(doubleInfo);
+	typetbl_add(doubleInfo);
 
 	//Bool = 2
 	TypeInfo boolInfo;
 	boolInfo.name = "Bool";
 	boolInfo.size = sizeof(bool);
-	TypeTable_AddType(boolInfo);
+	typetbl_add(boolInfo);
 
 	//Bool = 3
 	TypeInfo pInfo;
 	pInfo.name = "Pointer";
 	pInfo.size = sizeof(Pointer);
-	TypeTable_AddType(pInfo);
+	typetbl_add(pInfo);
 
 	//Bool = 4
 	TypeInfo stringInfo;
 	stringInfo.name = "String";
 	stringInfo.size = sizeof(StringPointer);
-	TypeTable_AddType(stringInfo);
+	typetbl_add(stringInfo);
 }
 
-TYPE_ID TypeTable_AddType(TypeInfo type)
+TYPE_ID typetbl_add(TypeInfo type)
 {
 	if (Global_TT.capacity < Global_TT.count + 1)
 	{
@@ -54,12 +54,12 @@ TYPE_ID TypeTable_AddType(TypeInfo type)
 	return Global_TT.count - 1;
 }
 
-TypeInfo* TypeTable_GetTypeInfo(TYPE_ID id)
+TypeInfo* typetbl_get_info(TYPE_ID id)
 {
 	return &Global_TT.types[id];
 }
 
-TYPE_ID TypeTable_GetTypeId(char* name, int length)
+TYPE_ID typetbl_get_id(char* name, int length)
 {
 	for (size_t i = 0; i < Global_TT.count; i++)
 	{
@@ -70,20 +70,20 @@ TYPE_ID TypeTable_GetTypeId(char* name, int length)
 	return TYPEID_VOID;
 }
 
-void TypeTable_Free()
+void typetbl_free()
 {
 	FREE_ARRAY(TypeInfo, Global_TT.types, Global_TT.capacity);
-	TypeTable_Init();
+	typetbl_init();
 }
 
-void TypeArray_Init(TypeArray* typeArray)
+void typearr_init(TypeArray* typeArray)
 {
 	typeArray->count = 0;
 	typeArray->capacity = 0;
 	typeArray->types = NULL;
 }
 
-void TypeArray_AddType(TypeArray* typeArray, TYPE_ID type)
+void typearr_add(TypeArray* typeArray, TYPE_ID type)
 {
 	if (typeArray->capacity < typeArray->count + 1)
 	{
@@ -96,7 +96,7 @@ void TypeArray_AddType(TypeArray* typeArray, TYPE_ID type)
 	typeArray->count++;
 }
 
-void TypeArray_RemoveType(TypeArray* typeArray, TYPE_ID type)
+void typearr_remove(TypeArray* typeArray, TYPE_ID type)
 {
 	int index = -1;
 	for (size_t i = 0; i < typeArray->count; i++)
@@ -117,8 +117,8 @@ void TypeArray_RemoveType(TypeArray* typeArray, TYPE_ID type)
 	typeArray->count--;
 }
 
-void TypeArray_Free(TypeArray* typeArray)
+void typearr_free(TypeArray* typeArray)
 {
 	FREE_ARRAY(TYPE_ID, typeArray->types, typeArray->capacity);
-	TypeArray_Init(typeArray);
+	typearr_init(typeArray);
 }

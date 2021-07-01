@@ -99,3 +99,21 @@ void parser_precedence(Parser* parser, ParseRule* parseRules, Precedence precede
 		infixRule(parser);
 	}
 }
+
+void parser_advmatch_or_error(Parser* parser, TokenType type, const char* message)
+{
+	if (parser->current.type == type)
+	{
+		parser_adv_tkn(parser);
+		return;
+	}
+
+	error_curr(parser, message);
+}
+
+bool parser_advmatch(Parser* parser, TokenType type)
+{
+	if (!parser_check_curr_type(parser, type)) return false;
+	parser_adv_tkn(parser);
+	return true;
+}

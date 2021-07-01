@@ -24,7 +24,7 @@ static void runtimeError(const char* format, ...)
 	fputs("\n", stderr);
 
 	size_t instruction = vm.ip - vm.chunk->code - 1;
-	int line = getLine(&vm.chunk->lines, instruction);
+	int line = linearr_get_line(&vm.chunk->lines, instruction);
 	fprintf(stderr, "[line %d] in script\n", line);
 	resetStack();
 }
@@ -39,54 +39,58 @@ static void printValue(Byte1* bytes, TYPE_ID type)
 	}
 }
 
-void initVM()
+void vm_init(VM* vm)
 {
 	resetStack();
 
-	TypeArray_Init(&vm.stackTypes);
-	HashTable_Init(&vm.strings);
-	HashTable_Init(&vm.globals);
+	typearr_init(&vm->stackTypes);
+	HashTable_Init(&vm->strings);
+	HashTable_Init(&vm->globals);
 }
 
-void freeVM()
+void vm_free(VM* vm)
 {
-	TypeArray_Free(&vm.stackTypes);
-	HashTable_Free(&vm.strings);
-	HashTable_Free(&vm.globals);
+	typearr_free(&vm->stackTypes);
+	HashTable_Free(&vm->strings);
+	HashTable_Free(&vm->globals);
 }
 
-void VM_Push(Byte1* bytes, TYPE_ID type)
+VMError vm_push_dec(VM* vm, double value)
 {
-	TypeArray_AddType(&vm.stackTypes, type);
-
-	int size = TypeTable_GetTypeInfo(type)->size;
-	memcpy(vm.stackTop, bytes, size);
-	vm.stackTop += size;
+	typearr_add(&vm->stackTypes, TYPEID_DEC);
+	return _vm_push(vm, (Byte1*)&value, sizeof(double));
 }
 
-Byte1* VM_Pop(TYPE_ID type)
+VMError vm_push_bool(VM* vm, bool value)
+{
+	typearr_add(&vm->stackTypes, TYPEID_BOOL);
+	return _vm_push(vm, (Byte1*)&value, sizeof(bool));
+}
+
+VMError _vm_push(VM* vm, Byte1* bytes, int size)
+{
+	memcpy(vm->stackTop, bytes, size);
+	vm->stackTop += size;
+	return ERR_NONE;
+}
+
+VMError _vm_pop(VM* vm, TYPE_ID type)
 {
 	if (type == TYPEID_VOID) return NULL;
+	asdasdasdasd
+		//add pop different methods
+	typearr_remove(&vm->stackTypes, type);
 
-	TypeArray_RemoveType(&vm.stackTypes, type);
-
-	vm.stackTop -= TypeTable_GetTypeInfo(type)->size;
-	return vm.stackTop;
+	vm->stackTop -= typetbl_get_info(type)->size;
+	return vm->stackTop;
 }
-Byte1* VM_PopPointer(TYPE_ID type)
+
+static TYPE_ID vm_peek_type(VM* vm)
 {
-	TypeArray_RemoveType(&vm.stackTypes, type);
-
-	vm.stackTop -= sizeof(void*);
-	return vm.stackTop;
+	return vm->stackTypes.types[vm->stackTypes.count - 1];
 }
 
-static TYPE_ID peekType()
-{
-	return vm.stackTypes.types[vm.stackTypes.count - 1];
-}
-
-InterpretResult interpret(const char* source)
+InterpretResult vm_interpret(VM* vm, const char* source)
 {
 	ByteCode c;
 	bytec_init_chunk(&c);
@@ -97,10 +101,10 @@ InterpretResult interpret(const char* source)
 		return INTERPRET_COMPILE_ERROR;
 	}
 
-	vm.chunk = &c;
-	vm.ip = vm.chunk->code;
+	vm->chunk = &c;
+	vm->ip = vm->chunk->code;
 
-	InterpretResult result = run();
+	InterpretResult result = vm_run();
 
 	bytec_free(&c);
 	return result;
@@ -109,25 +113,25 @@ InterpretResult interpret(const char* source)
 
 static bool Equality()
 {
-	switch (peekType())
+	switch (vm_peek_type())
 	{
-	case TYPEID_BOOL: return CAST(VM_Pop(TYPEID_BOOL), bool) == CAST(VM_Pop(TYPEID_BOOL), bool);
-	case TYPEID_DEC: return CAST(VM_Pop(TYPEID_DEC), double) == CAST(VM_Pop(TYPEID_DEC), double);
-	case TYPEID_STRING: return CAST(VM_Pop(TYPEID_STRING), StringPointer*) == CAST(VM_Pop(TYPEID_STRING), StringPointer*);
+	case TYPEID_BOOL: return CAST(vm_pop(TYPEID_BOOL), bool) == CAST(vm_pop(TYPEID_BOOL), bool);
+	case TYPEID_DEC: return CAST(vm_pop(TYPEID_DEC), double) == CAST(vm_pop(TYPEID_DEC), double);
+	case TYPEID_STRING: return CAST(vm_pop(TYPEID_STRING), StringPointer*) == CAST(vm_pop(TYPEID_STRING), StringPointer*);
 	}
 
 	return false;
 }
 
-InterpretResult run()
+InterpretResult vm_run()
 {
 #define READ_BYTE() (*vm.ip++)
 #define BINARY_OP(op, intype, inid, outtype, outid) \
     do { \
-      intype b = CAST(VM_Pop(inid), intype); \
-      intype a = CAST(VM_Pop(inid), intype); \
+      intype b = CAST(vm_pop(inid), intype); \
+      intype a = CAST(vm_pop(inid), intype); \
 	  outtype result = a op b; \
-      VM_Push(&result, outid); \
+      vm_push(&result, outid); \
     } while (false)
 
 #ifdef DEBUG_TRACE_EXECUTION
@@ -154,7 +158,7 @@ InterpretResult run()
 			case TYPEID_STRING: printf("%s", (char*)CAST(currentByte, StringPointer*)->base.p); break;
 			}
 			printf("]");
-			int typeSize = TypeTable_GetTypeInfo(type)->size;
+			int typeSize = typetbl_get_info(type)->size;
 			printf("(%ub) / ", typeSize);
 			currentByte += typeSize;
 			type++;
@@ -172,7 +176,7 @@ InterpretResult run()
 		{
 			TYPE_ID type = READ_BYTE();
 			Byte1* bytes = ByteArray_ReadByte(&vm.chunk->constants, READ_BYTE());
-			VM_Push(bytes, type);
+			vm_push(bytes, type);
 			break;
 		}
 
@@ -187,15 +191,15 @@ InterpretResult run()
 
 		case OP_NEGATE:
 		{
-			double d = -CAST(VM_Pop(TYPEID_DEC), double);
-			VM_Push(&d, TYPEID_DEC);
+			double d = -CAST(vm_pop(TYPEID_DEC), double);
+			vm_push(&d, TYPEID_DEC);
 			break;
 		}
 
 		case OP_NOT:
 		{
-			bool b = !CAST(VM_Pop(TYPEID_BOOL), bool);
-			VM_Push(&b, TYPEID_BOOL);
+			bool b = !CAST(vm_pop(TYPEID_BOOL), bool);
+			vm_push(&b, TYPEID_BOOL);
 			break;
 		}
 
@@ -204,24 +208,24 @@ InterpretResult run()
 		case OP_MULT:		BINARY_OP(*, double, TYPEID_DEC, double, TYPEID_DEC); break;
 		case OP_DIVIDE:		BINARY_OP(/ , double, TYPEID_DEC, double, TYPEID_DEC); break;
 
-		case OP_EQUALS: { bool result = Equality(); VM_Push(&result, TYPEID_BOOL); break; }
+		case OP_EQUALS: { bool result = Equality(); vm_push(&result, TYPEID_BOOL); break; }
 		case OP_GREAT:		BINARY_OP(> , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
 		case OP_LESS:		BINARY_OP(< , double, TYPEID_DEC, bool, TYPEID_BOOL); break;
 
-		case OP_TRUE: { bool b = true; VM_Push(&b, TYPEID_BOOL); break; }
-		case OP_FALSE: { bool b = false; VM_Push(&b, TYPEID_BOOL); break; }
+		case OP_TRUE: { bool b = true; vm_push(&b, TYPEID_BOOL); break; }
+		case OP_FALSE: { bool b = false; vm_push(&b, TYPEID_BOOL); break; }
 
 					 //case OP_IS:			BINARY_OP(< , bool, TYPEID_BOOL, bool, TYPEID_BOOL); break;
 
 		case OP_PRINT:
 		{
-			TYPE_ID type = peekType();
-			printValue(VM_Pop(type), type);
+			TYPE_ID type = vm_peek_type();
+			printValue(vm_pop(type), type);
 			printf("\n");
 			break;
 		}
 
-		case OP_POP: VM_Pop(peekType()); break;
+		case OP_POP: vm_pop(vm_peek_type()); break;
 		case OP_RETURN: return INTERPRET_OK;
 
 		}

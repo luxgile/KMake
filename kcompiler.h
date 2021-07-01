@@ -35,3 +35,8 @@ typedef struct {
 } KCompiler;
 
 bool kcom_compile(const char* source, ByteCode* chunk);
+
+inline ParseRule* get_rule(ParseRule* parseRules, TokenType type)
+{
+	return &parseRules[type];
+}

@@ -64,31 +64,6 @@ ParseRule parseRules[] = {
   [TOKEN_EOF] = {NULL,     NULL,   PREC_NONE},
 };
 
-inline ParseRule* get_rule(ParseRule* parseRules, TokenType type)
-{
-	return &parseRules[type];
-}
-
-//remove the advance and move
-void match_or_error(Parser* parser, TokenType type, const char* message)
-{
-	if (parser->current.type == type)
-	{
-		parser_adv_tkn(parser);
-		return;
-	}
-
-	error_curr(parser, message);
-}
-
-//remove the advance shet and move
-bool match(Parser* parser, TokenType type)
-{
-	if (!parser_check_curr_type(parser, type)) return false;
-	parser_adv_tkn(parser);
-	return true;
-}
-
 inline void emit_byte(KCompiler* compiler, Byte1 byte)
 {
 	bytec_write(compiler->bytec, byte, compiler->parser.previous.line);
@@ -164,14 +139,14 @@ void emit_constp(KCompiler* compiler, Byte1* bytes, TYPE_ID id)
 void statement_print(KCompiler* compiler)
 {
 	read_expression(compiler);
-	match_or_error(TOKEN_SEMICOLON, "Expect ';' after value.");
+	parser_advmatch_or_error(&compiler->parser, TOKEN_SEMICOLON, "Expect ';' after value.");
 	emit_byte(compiler, OP_PRINT);
 }
 
 void statement_exprs(KCompiler* compiler)
 {
 	read_expression(compiler);
-	match_or_error(TOKEN_SEMICOLON, "Expect ';' after expression.");
+	parser_advmatch_or_error(&compiler->parser, TOKEN_SEMICOLON, "Expect ';' after expression.");
 	emit_byte(compiler, OP_POP);
 }
 
@@ -188,7 +163,7 @@ void var_define(TYPE_ID type, uint8_t global)
 
 uint8_t var_parse(KCompiler* compiler, TYPE_ID type, const char* errorMessage)
 {
-	match_or_error(&compiler->parser, TOKEN_IDENTIFIER, errorMessage);
+	parser_advmatch_or_error(&compiler->parser, TOKEN_IDENTIFIER, errorMessage);
 	return make_identifier(compiler, type, &compiler->parser.previous);
 }
 
@@ -196,12 +171,12 @@ void var_declaration(KCompiler* compiler, TYPE_ID type)
 {
 	uint8_t global = var_parse(compiler, type, "Expect variable name.");
 
-	if (match(&compiler->parser, TOKEN_EQUALS))
+	if (parser_advmatch(&compiler->parser, TOKEN_EQUALS))
 	{
 		read_expression(compiler);
 	}
 
-	match_or_error(&compiler->parser, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+	parser_advmatch_or_error(&compiler->parser, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
 
 	var_define(type, global);
 }
@@ -232,7 +207,7 @@ void read_unary(KCompiler* compiler)
 	TokenType operatorType = compiler->parser.previous.type;
 
 	// Compile the operand.
-	parser_precedence(&compiler->parser, PREC_UNARY);
+	parser_precedence(&compiler->parser, &parseRules, PREC_UNARY);
 
 	// Emit the operator instruction.
 	switch (operatorType)
@@ -246,35 +221,35 @@ void read_unary(KCompiler* compiler)
 void read_binary(KCompiler* compiler)
 {
 	TokenType operatorType = compiler->parser.previous.type;
-	ParseRule* rule = get_rule(operatorType);
-	parser_precedence((Precedence)(rule->precedence + 1));
+	ParseRule* rule = get_rule(parseRules, operatorType);
+	parser_precedence(&compiler->parser, parseRules, (Precedence)(rule->precedence + 1));
 
 	switch (operatorType)
 	{
-	case TOKEN_PLUS:				emit_byte(OP_ADD); break;
-	case TOKEN_MINUS:				emit_byte(OP_SUBTRACT); break;
-	case TOKEN_STAR:				emit_byte(OP_MULT); break;
-	case TOKEN_SLASH:				emit_byte(OP_DIVIDE); break;
-	case TOKEN_EQUALS:				emit_byte(OP_EQUALS); break;
+	case TOKEN_PLUS:				emit_byte(compiler, OP_ADD); break;
+	case TOKEN_MINUS:				emit_byte(compiler, OP_SUBTRACT); break;
+	case TOKEN_STAR:				emit_byte(compiler, OP_MULT); break;
+	case TOKEN_SLASH:				emit_byte(compiler, OP_DIVIDE); break;
+	case TOKEN_EQUALS:				emit_byte(compiler, OP_EQUALS); break;
 
-	/*case TOKEN_IS_NOT:				emit2Bytes(OP_EQUAL, OP_NOT); break;
-	case TOKEN_IS:					emitByte(OP_IS); break;	To define equality on types*/
-	case TOKEN_GREATER:				emit_byte(OP_GREAT); break;
-	case TOKEN_GREATER_OR_EQUALS:	emit_2bytes(OP_LESS, OP_NOT); break;
-	case TOKEN_LESS:				emit_byte(OP_LESS); break;
-	case TOKEN_LESS_OR_EQUALS:		emit_2bytes(OP_GREAT, OP_NOT); break;
+		/*case TOKEN_IS_NOT:				emit2Bytes(OP_EQUAL, OP_NOT); break;
+		case TOKEN_IS:					emitByte(OP_IS); break;	To define equality on types*/
+	case TOKEN_GREATER:				emit_byte(compiler, OP_GREAT); break;
+	case TOKEN_GREATER_OR_EQUALS:	emit_2bytes(compiler, OP_LESS, OP_NOT); break;
+	case TOKEN_LESS:				emit_byte(compiler, OP_LESS); break;
+	case TOKEN_LESS_OR_EQUALS:		emit_2bytes(compiler, OP_GREAT, OP_NOT); break;
 	default: return;
 	}
 }
 
 void read_expression(KCompiler* compiler)
 {
-	parser_precedence(compiler, PREC_ASSIGNMENT);
+	parser_precedence(compiler, parseRules, PREC_ASSIGNMENT);
 }
 
 void read_statement(KCompiler* compiler)
 {
-	if (match(&compiler->parser, TOKEN_PRINT))
+	if (parser_advmatch(&compiler->parser, TOKEN_PRINT))
 	{
 		statement_print(compiler);
 	}
@@ -286,13 +261,13 @@ void read_statement(KCompiler* compiler)
 
 void read_declaration(KCompiler* compiler)
 {
-	if (match(&compiler->parser, TOKEN_IDENTIFIER))
+	if (parser_advmatch(&compiler->parser, TOKEN_IDENTIFIER))
 	{
-		TYPE_ID type = TypeTable_GetTypeId(compiler->parser.previous.start, compiler->parser.previous.length);
+		TYPE_ID type = typetbl_get_id(compiler->parser.previous.start, compiler->parser.previous.length);
 		if (type != TYPEID_VOID)
 			var_declaration(compiler, type);
 		else
-			error_curr("%s is not defined.", TypeTable_GetTypeInfo(type)->name);
+			error_curr("%s is not defined.", typetbl_get_info(type)->name);
 	}
 	else
 	{
@@ -305,7 +280,7 @@ void read_declaration(KCompiler* compiler)
 void read_grouping(KCompiler* compiler)
 {
 	read_expression(compiler);
-	match_or_error(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+	parser_advmatch_or_error(&compiler->parser, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
 bool kcom_compile(const char* source, ByteCode* chunk)
@@ -319,12 +294,12 @@ bool kcom_compile(const char* source, ByteCode* chunk)
 
 	parser_adv_tkn(&compiler.parser);
 
-	while (!match(&compiler.parser, TOKEN_EOF))
+	while (!parser_advmatch(&compiler.parser, TOKEN_EOF))
 	{
 		read_declaration(&compiler);
 	}
 
-	match_or_error(TOKEN_EOF, "Expect end of expression.");
+	parser_advmatch_or_error(&compiler.parser, TOKEN_EOF, "Expect end of expression.");
 	kcom_end(&compiler);
 	return !compiler.parser.hadError;
 }

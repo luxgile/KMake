@@ -4,14 +4,14 @@
 
 #include "kmem.h"
 
-void ByteArray_Init(ByteArray* array)
+void bytearr_init(ByteArray* array)
 {
 	array->count = 0;
 	array->capacity = 0;
 	array->bytes = NULL;
 }
 
-void ByteArray_AddByte(ByteArray* array, Byte1 byte)
+void bytearr_add(ByteArray* array, Byte1 byte)
 {
 	if (array->capacity < array->count + 1)
 	{
@@ -24,14 +24,14 @@ void ByteArray_AddByte(ByteArray* array, Byte1 byte)
 	array->count++;
 }
 
-void ByteArray_AddBytes(ByteArray* array, Byte1* bytes, int size)
+void bytearr_addarr(ByteArray* array, Byte1* bytes, int size)
 {
 	if (array->capacity < array->count + size)
 	{
 		int oldCapacity = array->capacity;
 		array->capacity = GROW_CAPACITY(oldCapacity);
 		array->bytes = GROW_ARRAY(Byte1, array->bytes, oldCapacity, array->capacity);
-		ByteArray_AddBytes(array, bytes, size);
+		bytearr_addarr(array, bytes, size);
 		return;
 	}
 
@@ -40,8 +40,8 @@ void ByteArray_AddBytes(ByteArray* array, Byte1* bytes, int size)
 	array->count += size;
 }
 
-void ByteArray_Free(ByteArray* array)
+void bytearr_free(ByteArray* array)
 {
 	FREE_ARRAY(uint8_t, array->bytes, array->capacity);
-	ByteArray_Init(array);
+	bytearr_init(array);
 }

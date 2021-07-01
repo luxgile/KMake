@@ -6,14 +6,14 @@
 
 #define GET_LAST_LINE(array) (array->count == 0 ? NULL : &array->lines[array->count - 1])
 
-void initLinesArray(RunLineArray* array)
+void linearr_init(RunLineArray* array)
 {
 	array->capacity = 0;
 	array->count = 0;
 	array->lines = NULL;
 }
 
-void writeLinesArray(RunLineArray* array, int line)
+void linearr_write(RunLineArray* array, int line)
 {
 	if (array->capacity < array->count + 1)
 	{
@@ -36,13 +36,13 @@ void writeLinesArray(RunLineArray* array, int line)
 	else array->lines[array->count - 1].reps++;
 }
 
-void freeLinesArray(RunLineArray* array)
+void linearr_free(RunLineArray* array)
 {
 	FREE_ARRAY(RunLine, array->lines, array->capacity);
-	initLinesArray(array);
+	linearr_init(array);
 }
 
-int getLine(RunLineArray* array, int offset)
+int linearr_get_line(RunLineArray* array, int offset)
 {
 	int count = 0;
 	for (size_t i = 0; i < array->count; i++)
