@@ -27,13 +27,10 @@ static void repl(VM* vm)
 int main(int argc, const char* argv[])
 {
 	VM vm;
-	TypeTable table;
 	vm_init(&vm);
-	typetbl_init(&table);
 
 	repl(&vm);
 
 	vm_free(&vm);
-	typetbl_free(&table);
 	return 0;
 }

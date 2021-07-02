@@ -28,21 +28,20 @@ void bytec_write(ByteCode* chunk, uint8_t byte, int line)
 	chunk->count++;
 }
 
-int bytec_add_c(ByteCode* chunk, TYPE_ID id, Byte1* value)
+int bytec_add_c(ByteCode* chunk, Byte1* value, TYPE_ID type, int size)
 {
-	TypeInfo* type = typetbl_get_info(id);
-	bytearr_addarr(&chunk->constants, value, type->size);
-	typearr_add(&chunk->types, id);
-	return chunk->constants.count - type->size;
-}
-
-int bytec_add_cp(ByteCode* chunk, TYPE_ID id, Byte1* pointer)
-{
-	size_t size = sizeof(void*);
-	bytearr_addarr(&chunk->constants, &pointer, size);
-	typearr_add(&chunk->types, id);
+	bytearr_addarr(&chunk->constants, value, size);
+	typearr_add(&chunk->types, type);
 	return chunk->constants.count - size;
 }
+
+//int bytec_add_cp(ByteCode* chunk, TYPE_ID id, Byte1* pointer)
+//{
+//	size_t size = sizeof(void*);
+//	bytearr_addarr(&chunk->constants, &pointer, size);
+//	typearr_add(&chunk->types, id);
+//	return chunk->constants.count - size;
+//}
 
 void bytec_free(ByteCode* chunk)
 {

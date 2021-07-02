@@ -103,7 +103,7 @@ void kcom_end(KCompiler* compiler)
 
 uint8_t make_const(KCompiler* compiler, Byte1* byte, TYPE_ID id)
 {
-	int constant = bytec_add_c(compiler->bytec, id, byte);
+	int constant = bytec_add_c(compiler->bytec, byte, id, GET_TYPE_SIZE());
 	if (constant > UINT8_MAX)
 	{
 		error_prev(&compiler->parser, "Too many constants in one chunk.");

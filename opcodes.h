@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vm.h"
+#include "genericArray.h"
 
 typedef enum
 {
@@ -22,9 +23,19 @@ typedef enum
 	OP_PRINT,
 } OpCode;
 
-typedef void (*OpCodeFn) (VM* vm);
+typedef InterpretResult(*OpCodeFn) (VM* vm);
 
 typedef struct {
 	OpCode op;
 	OpCodeFn fn;
 } OpCodeHolder;
+
+typedef struct {
+	GenericArray opcodes;
+} OpCodeRegister;
+
+void opcode_init_reg(OpCodeRegister* reg);
+void opcode_free_reg(OpCodeRegister* reg);
+
+void opcode_register_code(OpCodeRegister* reg, OpCodeHolder code);
+void opcode_run_code(OpCodeRegister* reg, VM* vm, OpCode op);

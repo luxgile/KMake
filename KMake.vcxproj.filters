@@ -72,6 +72,18 @@
     <ClCompile Include="byteStack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="genericArray.h">
+      <Filter>Header Files\Collections</Filter>
+    </ClCompile>
+    <ClCompile Include="genericArray.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="opcodes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="opcode_impl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -115,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="opcodes.h">
       <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="opcode_impl.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

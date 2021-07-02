@@ -9,9 +9,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include "commonTypes.h"
+#include "opcode_impl.h"
 
-void vm_error(VM* vm, const char* format, ...)
-{
+void vm_error(VM* vm, const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 	vfprintf(stderr, format, args);
@@ -24,58 +24,48 @@ void vm_error(VM* vm, const char* format, ...)
 	resetStack();
 }
 
-void vm_init(VM* vm)
-{
+void vm_init(VM* vm) {
 	resetStack();
 
+	opcode_init_reg(&vm->opReg);
+	opcode_impl_generate(&vm->opReg);
+	typetbl_init(&vm->typeTable);
 	typearr_init(&vm->stackTypes);
 	HashTable_Init(&vm->strings);
 	HashTable_Init(&vm->globals);
 }
 
-void vm_free(VM* vm)
-{
+void vm_free(VM* vm) {
+	opcode_free_reg(&vm->opReg);
+	typetbl_free(&vm->typeTable);
 	typearr_free(&vm->stackTypes);
 	HashTable_Free(&vm->strings);
 	HashTable_Free(&vm->globals);
 }
 
-void vm_push_dec(VM* vm, double value)
-{
-	typearr_add(&vm->stackTypes, TYPEID_DEC);
-	BYTESTK_PUSH(&vm->stack, double, value);
+void vm_push(VM* vm, Byte1* value, TYPE_ID type, int size) {
+	typearr_add(&vm->stackTypes, type);
+	bytestk_push_arr(&vm->stackTypes, value, size);
 }
 
-void vm_push_bool(VM* vm, bool value)
-{
-	typearr_add(&vm->stackTypes, TYPEID_BOOL);
-	BYTESTK_PUSH(&vm->stack, bool, value);
+void vm_pop(VM* vm, Byte1* out_value, TYPE_ID type, int size) {
+	typearr_remove(&vm->stackTypes, type);
+	bytestk_pop_arr(&vm->stackTypes, out_value, size);
 }
 
-void vm_pop_dec(VM* vm, double* out_value)
-{
-	typearr_remove(&vm->stackTypes, TYPEID_DEC);
-	BYTESTK_POP(&vm->stack, double, out_value);
-}
-
-void vm_pop_bool(VM* vm, bool* out_value)
-{
-	typearr_remove(&vm->stackTypes, TYPEID_BOOL);
-	BYTESTK_POP(&vm->stack, bool, out_value);
-}
-
-TYPE_ID vm_peek_type(VM* vm)
-{
+inline TYPE_ID vm_peek_type(VM* vm) {
 	return vm->stackTypes.types[vm->stackTypes.count - 1];
 }
 
-InterpretResult vm_interpret(VM* vm, const char* source)
-{
+inline TYPE_ID vm_peek_typec(VM* vm, int depth) {
+	return vm->stackTypes.types[vm->stackTypes.count - (1 + depth)];
+}
+
+InterpretResult vm_interpret(VM* vm, const char* source) {
 	ByteCode c;
 	bytec_init_chunk(&c);
 
-	if (!kcom_compile(source, &c))
-	{
+	if (!kcom_compile(source, &c)) {
 		bytec_free(&c);
 		return INTERPRET_COMPILE_ERROR;
 	}
@@ -90,15 +80,13 @@ InterpretResult vm_interpret(VM* vm, const char* source)
 	//return run();
 }
 
-inline Byte1* vm_read_ip(VM* vm)
-{
+inline Byte1* vm_read_ip(VM* vm) {
 	return *vm->ip++;
 }
 
-InterpretResult vm_run(VM* vm)
-{
-#define READ_BYTE() (*vm->ip++)
-#define BINARY_OP(op, intype, inid, outtype, outid) \
+InterpretResult vm_run(VM* vm) {
+	#define READ_BYTE() (*vm->ip++)
+	#define BINARY_OP(op, intype, inid, outtype, outid) \
     do { \
       intype b = CAST(vm_pop(inid), intype); \
       intype a = CAST(vm_pop(inid), intype); \
@@ -106,24 +94,21 @@ InterpretResult vm_run(VM* vm)
       vm_push(&result, outid); \
     } while (false)
 
-#ifdef DEBUG_TRACE_EXECUTION
+	#ifdef DEBUG_TRACE_EXECUTION
 	printf("\n== Stack Debug ==\n");
-#endif
+	#endif
 
-	while(true)
-	{
+	while (true) {
 
-#ifdef DEBUG_TRACE_EXECUTION
+		#ifdef DEBUG_TRACE_EXECUTION
 
 		printf("\t\t");
 		Byte1* currentByte = &vm->stack;
 		int stackSize;
-		for (int i = 0; i < vm->stackTypes.count; i++)
-		{
+		for (int i = 0; i < vm->stackTypes.count; i++) {
 			TYPE_ID type = vm->stackTypes.types[i];
 			printf("[");
-			switch (type)
-			{
+			switch (type) {
 			case TYPEID_VOID: printf("void"); break;
 			case TYPEID_DEC: printf("%g", CAST(currentByte, double)); break;
 			case TYPEID_BOOL: printf("%s", CAST(currentByte, bool) ? "true" : "false"); break;
@@ -138,11 +123,10 @@ InterpretResult vm_run(VM* vm)
 		printf("-> (%ub)", vm->stackTop - vm->stack);
 		printf("\n");
 		debug_disassemble_opcode(vm->chunk, vm->ip - vm->chunk->code);
-#endif
+		#endif
 
 		uint8_t instruction;
-		switch (instruction = READ_BYTE())
-		{
+		switch (instruction = READ_BYTE()) {
 
 		case OP_CONSTANT:
 		{
@@ -203,6 +187,6 @@ InterpretResult vm_run(VM* vm)
 		}
 	}
 
-#undef READ_BYTE
-#undef BINARY_OP
+	#undef READ_BYTE
+	#undef BINARY_OP
 }

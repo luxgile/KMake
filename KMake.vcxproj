@@ -145,6 +145,8 @@
     <ClCompile Include="byteStack.c" />
     <ClCompile Include="commonTypes.c" />
     <ClCompile Include="commonTypes.h" />
+    <ClCompile Include="genericArray.c" />
+    <ClCompile Include="genericArray.h" />
     <ClCompile Include="hashTable.c" />
     <ClCompile Include="kcompiler.c" />
     <ClCompile Include="kdebug.c" />
@@ -152,6 +154,8 @@
     <ClCompile Include="kparser.c" />
     <ClCompile Include="kscan.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="opcodes.c" />
+    <ClCompile Include="opcode_impl.c" />
     <ClCompile Include="runLines.c" />
     <ClCompile Include="typeTable.c" />
     <ClCompile Include="vm.c" />
@@ -168,6 +172,7 @@
     <ClInclude Include="kparser.h" />
     <ClInclude Include="kscan.h" />
     <ClInclude Include="opcodes.h" />
+    <ClInclude Include="opcode_impl.h" />
     <ClInclude Include="runLines.h" />
     <ClInclude Include="typeTable.h" />
     <ClInclude Include="vm.h" />

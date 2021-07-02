@@ -52,12 +52,13 @@ Byte1 bytestk_pop(ByteStack* stack)
 	return *stack->stacktop;
 }
 
-void bytestk_pop_arr(ByteStack* stack, Byte1* out_arr, int count)
+void bytestk_pop_arr(ByteStack* stack, Byte1** out_arr, int count)
 {
+	if(out_arr == NULL) return; 
 #ifdef DEBUG_SAFETY
 	if (bytestk_count(stack) - count < 0) printf("Error: Stack Underflow.");
 #endif
 
 	stack->stacktop -= count;
-	memcpy(out_arr, stack->stacktop, count);
+	*out_arr = stack->stacktop;
 }
