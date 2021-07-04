@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __KSCAN_HEADER__
+#define __KSCAN_HEADER__
 
 typedef enum {
 	// Single-character tokens.
@@ -43,3 +44,5 @@ typedef struct
 
 void scan_init(Scanner* scanner, const char* source);
 Token scan_next_token(Scanner* scanner);
+
+#endif

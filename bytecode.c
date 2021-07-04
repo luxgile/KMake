@@ -2,12 +2,13 @@
 #include "bytecode.h"
 #include "kmem.h"
 
-void bytec_init_chunk(ByteCode* chunk)
+void bytec_init(ByteCode* chunk)
 {
 	chunk->count = 0;
 	chunk->capacity = 0;
 	chunk->code = NULL;
 
+	typetbl_init(&chunk->typeTable);
 	bytearr_init(&chunk->constants);
 	typearr_init(&chunk->types);
 	linearr_init(&chunk->lines);
@@ -46,8 +47,9 @@ int bytec_add_c(ByteCode* chunk, Byte1* value, TYPE_ID type, int size)
 void bytec_free(ByteCode* chunk)
 {
 	FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
+	typetbl_free(&chunk->typeTable);
 	bytearr_free(&chunk->constants);
 	typearr_free(&chunk->types);
 	linearr_free(&chunk->lines);
-	ByteCode_InitChunk(chunk);
+	bytec_init(chunk);
 }

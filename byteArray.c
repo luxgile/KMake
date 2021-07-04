@@ -1,7 +1,5 @@
 #include "byteArray.h"
-
 #include <string.h>
-
 #include "kmem.h"
 
 void bytearr_init(ByteArray* array)
@@ -40,7 +38,7 @@ void bytearr_addarr(ByteArray* array, Byte1* bytes, int size)
 	array->count += size;
 }
 
-inline Byte1* bytearr_read(ByteArray* array, int index)
+Byte1* bytearr_read(ByteArray* array, int index)
 {
 	return &(array)->bytes[index];
 }

@@ -1,36 +1,16 @@
-#pragma once
+#ifndef __OPCODES_HEADER__
+#define __OPCODES_HEADER__
 
-#include "vm.h"
+#include "common.h"
+#include "opcode_enums.h"
 #include "genericArray.h"
 
-typedef enum
-{
-	OP_CONSTANT,
-	OP_DEFINE_GLOBAL,
-	OP_POP,
-	OP_NEGATE,
-	OP_ADD,
-	OP_SUBTRACT,
-	OP_MULT,
-	OP_DIVIDE,
-	OP_TRUE,
-	OP_FALSE,
-	OP_EQUALS,
-	OP_NOT,
-	OP_GREAT,
-	OP_LESS,
-	OP_RETURN,
-	OP_PRINT,
-} OpCode;
-
-typedef InterpretResult(*OpCodeFn) (VM* vm);
-
-typedef struct {
+typedef struct OpCodeHolder {
 	OpCode op;
-	OpCodeFn fn;
+	GenericFn fn;
 } OpCodeHolder;
 
-typedef struct {
+typedef struct OpCodeRegister {
 	GenericArray opcodes;
 } OpCodeRegister;
 
@@ -38,4 +18,6 @@ void opcode_init_reg(OpCodeRegister* reg);
 void opcode_free_reg(OpCodeRegister* reg);
 
 void opcode_register_code(OpCodeRegister* reg, OpCodeHolder code);
-void opcode_run_code(OpCodeRegister* reg, VM* vm, OpCode op);
+GenericFn* opcode_get_op_func(OpCodeRegister* reg, OpCode op);
+
+#endif

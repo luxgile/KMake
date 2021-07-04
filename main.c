@@ -1,11 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "common.h"
-#include "bytecode.h"
-#include "typeTable.h"
-#include "kdebug.h"
-#include "byteArray.h"
 #include "vm.h"
 
 static void repl(VM* vm)

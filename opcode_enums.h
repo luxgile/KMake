@@ -1,0 +1,23 @@
+#ifndef __OPCODE_ENUMS_HEADER__
+#define __OPCODE_ENUMS_HEADER__
+
+typedef enum OpCode {
+	OP_CONSTANT,
+	OP_DEFINE_GLOBAL,
+	OP_POP,
+	OP_NEGATE,
+	OP_ADD,
+	OP_SUBTRACT,
+	OP_MULT,
+	OP_DIVIDE,
+	OP_TRUE,
+	OP_FALSE,
+	OP_EQUALS,
+	OP_NOT,
+	OP_GREAT,
+	OP_LESS,
+	OP_RETURN,
+	OP_PRINT,
+} OpCode;
+
+#endif

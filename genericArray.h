@@ -1,6 +1,7 @@
-#pragma once
+#ifndef __GENERIC_ARRAY_HEADER__
+#define __GENERIC_ARRAY_HEADER__
 
-typedef struct {
+typedef struct GenericArray {
 	void* elements;
 	int elementSize;
 	int count;
@@ -10,5 +11,6 @@ typedef struct {
 void genarr_init(GenericArray* arr, int elementSize);
 void genarr_free(GenericArray* arr);
 void genarr_add(GenericArray* arr, void* element);
-inline void* genarr_get(GenericArray* arr, int index);
-void* genarr_foreach(GenericArray* arr, void(*f)(void*))
+void* genarr_get(GenericArray* arr, int index);
+
+#endif

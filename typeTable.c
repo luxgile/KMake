@@ -1,5 +1,6 @@
 #include "typeTable.h"
 #include "commonTypes.h"
+#include "common.h"
 #include <string.h>
 #include "kmem.h"
 
@@ -59,9 +60,9 @@ TypeInfo* typetbl_get_info(TypeTable* table, TYPE_ID id)
 	return &table->types[id];
 }
 
-TYPE_ID typetbl_get_id(TypeTable* table, char* name, int length)
+TYPE_ID typetbl_get_id(TypeTable* table, const char* name, int length)
 {
-	for (size_t i = 0; i < table->count; i++)
+	for (TYPE_ID i = 0; i < table->count; i++)
 	{
 		if (memcmp(table->types[i].name, name, length) == 0)
 			return i;
@@ -99,7 +100,7 @@ void typearr_add(TypeArray* typeArray, TYPE_ID type)
 void typearr_remove(TypeArray* typeArray, TYPE_ID type)
 {
 	int index = -1;
-	for (size_t i = 0; i < typeArray->count; i++)
+	for (int i = 0; i < typeArray->count; i++)
 	{
 		if (typeArray->types[i] == type)
 		{
@@ -111,7 +112,7 @@ void typearr_remove(TypeArray* typeArray, TYPE_ID type)
 	if (index == -1)
 		return;
 
-	for (size_t i = index; i < typeArray->count - 1; i++)
+	for (int i = index; i < typeArray->count - 1; i++)
 		typeArray->types[i] = typeArray->types[i + 1];
 
 	typeArray->count--;

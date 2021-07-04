@@ -23,17 +23,11 @@ void genarr_add(GenericArray* arr, void* element) {
 		arr->elements = kmem_reallocate(arr->elements, arr->elementSize * oldCapacity, arr->elementSize * arr->capacity);
 	}
 
-	memcpy(((Byte1*)arr->elements)[arr->count * arr->elementSize], element, arr->elementSize);
+	Byte1* elements = ((Byte1*)arr->elements);
+	memcpy(&elements[arr->count * arr->elementSize], element, arr->elementSize);
 	arr->count++;
 }
 
-inline void* genarr_get(GenericArray* arr, int index) {
-	return ((Byte1*)arr->elements)[arr->count * arr->elementSize];
-}
-
-void* genarr_foreach(GenericArray* arr, void(*f)(void*)) {
-	Byte1* elements = arr->elements;
-	for (size_t i = 0; i < arr->count; i++) {
-		f(elements[arr->elementSize * i]);
-	}
+void* genarr_get(GenericArray* arr, int index) {
+	return (void*)&((Byte1*)arr->elements)[arr->count * arr->elementSize];
 }

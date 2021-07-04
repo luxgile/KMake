@@ -1,13 +1,12 @@
-#pragma once
+#ifndef __KCOMPILER_HEADER__
+#define __KCOMPILER_HEADER__
 
 #include "common.h"
 #include "bytecode.h"
 #include "kscan.h"
 #include "kparser.h"
 
-typedef void (*ParseFn)(KCompiler* compiler);
-
-typedef enum
+typedef enum Precedence
 {
 	PREC_NONE,
 	PREC_ASSIGNMENT,  // =
@@ -22,20 +21,22 @@ typedef enum
 	PREC_PRIMARY
 } Precedence;
 
-typedef struct {
+typedef struct KCompiler {
+	Parser parser;
+	ByteCode* bytec;
+} KCompiler;
+
+typedef void (*ParseFn)(KCompiler* compiler);
+
+typedef struct ParseRule {
 	ParseFn prefix;
 	ParseFn infix;
 	Precedence precedence;
 } ParseRule;
 
-typedef struct {
-	Parser parser;
-	ByteCode* bytec;
-} KCompiler;
 
 bool kcom_compile(const char* source, ByteCode* chunk);
 
-inline ParseRule* get_rule(ParseRule* parseRules, TokenType type)
-{
-	return &parseRules[type];
-}
+ParseRule* get_rule(ParseRule* parseRules, TokenType type);
+
+#endif

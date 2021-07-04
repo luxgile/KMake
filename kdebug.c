@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include "kdebug.h"
 #include "runLines.h"
+#include "common.h"
+#include "opcodes.h"
 #include "commonTypes.h"
 
 void debug_disassemble_bytec(ByteCode* chunk, const char* name)
 {
 	printf("== %s ==\n", name);
 
-	for (size_t i = 0; i < chunk->count;)
+	for (int i = 0; i < chunk->count;)
 	{
 		i = debug_disassemble_opcode(chunk, i);
 	}
@@ -23,7 +25,7 @@ static int constantInstruction(const char* name, ByteCode* chunk, int offset)
 {
 	//Get constant parameter
 	TYPE_ID type = chunk->code[offset + 1];
-	TypeInfo* typeInfo = typetbl_get_info(type);
+	TypeInfo* typeInfo = typetbl_get_info(&chunk->typeTable, type);
 	Byte1 constant = chunk->code[offset + 2];
 
 	printf("%-16s %4d ", name, constant);
@@ -31,9 +33,9 @@ static int constantInstruction(const char* name, ByteCode* chunk, int offset)
 
 	switch (type)
 	{
-	case TYPEID_DEC: printf("%g", bytearr_read(&chunk->constants, double, constant)); break;
-	case TYPEID_BOOL: printf("%s", bytearr_read(&chunk->constants, bool, constant) ? "true" : "false"); break;
-	case TYPEID_STRING: printf("%s", (char*)bytearr_read(&chunk->constants, StringPointer*, constant)->base.p); break;
+	case TYPEID_DEC: printf("%g", bytearr_read_type(&chunk->constants, double, constant)); break;
+	case TYPEID_BOOL: printf("%s", bytearr_read_type(&chunk->constants, bool, constant) ? "true" : "false"); break;
+	//case TYPEID_STRING: printf("%s", (char*)bytearr_read_type(&chunk->constants, StringPointer*, constant)->base.p); break;
 	}
 
 	printf("'\n");
@@ -58,10 +60,10 @@ int debug_disassemble_opcode(ByteCode* chunk, int offset)
 	case OP_CONSTANT: return constantInstruction("OP_CONSTANT", chunk, offset);
 	case OP_DEFINE_GLOBAL: return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
 
-	case OP_ADD: return simpleInstruction("OP_ADD", chunk, offset);
-	case OP_SUBTRACT: return simpleInstruction("OP_SUBSTRACT", chunk, offset);
-	case OP_MULT: return simpleInstruction("OP_MULT", chunk, offset);
-	case OP_DIVIDE: return simpleInstruction("OP_DIVIDE", chunk, offset);
+	case OP_ADD: return simpleInstruction("OP_ADD", offset);
+	case OP_SUBTRACT: return simpleInstruction("OP_SUBSTRACT", offset);
+	case OP_MULT: return simpleInstruction("OP_MULT", offset);
+	case OP_DIVIDE: return simpleInstruction("OP_DIVIDE", offset);
 
 	case OP_NEGATE: return simpleInstruction("OP_NEGATE", offset);
 	case OP_EQUALS: return simpleInstruction("OP_EQUALS", offset);

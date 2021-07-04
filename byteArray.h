@@ -1,7 +1,7 @@
-#pragma once
+#ifndef __BYTE_ARRAY_HEADER__
+#define __BYTE_ARRAY_HEADER__
 
 #include "common.h"
-
 
 typedef struct
 {
@@ -14,6 +14,8 @@ void bytearr_init(ByteArray* array);
 void bytearr_free(ByteArray* array);
 void bytearr_add(ByteArray* array, Byte1 byte);
 void bytearr_addarr(ByteArray* array, Byte1* bytes, int size);
-inline Byte1* bytearr_read(ByteArray* array, int size);
+Byte1* bytearr_read(ByteArray* array, int size);
 
-#define bytearr_read_type(array, type, index) ((type*)bytearr_read(array, index));
+#define bytearr_read_type(array, type, index) *((type*)bytearr_read(array, index))
+
+#endif

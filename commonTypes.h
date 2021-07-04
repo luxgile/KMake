@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __COMMON_TYPES_HEADER__
+#define __COMMON_TYPES_HEADER__
 
 #include "typeTable.h"
 
@@ -27,12 +28,14 @@ typedef struct
 {
 	Pointer base;
 	int length;
-	uint32_t hash;
+	Byte4 hash;
 } StringPointer;
 
-StringPointer* CopyString(const char* chars, int length);
+//StringPointer* CopyString(const char* chars, int length);
 bool ktype_equality(Byte1* a, Byte1* b, TYPE_ID type);
 void ktype_print(Byte1* value, TYPE_ID type);
 
-inline double ktype_double(Byte1* value) { return *(double*)value; }
-inline bool ktype_bool(Byte1* value) { return *(bool*)value; }
+double ktype_double(Byte1* value);
+bool ktype_bool(Byte1* value);
+
+#endif

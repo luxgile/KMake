@@ -14,4 +14,6 @@ typedef uint16_t	Byte2;
 typedef uint32_t	Byte4;
 typedef uint64_t	Byte8;
 
+typedef void (*GenericFn)(void*);
+
 #endif 

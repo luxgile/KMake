@@ -202,7 +202,7 @@ static Token tkn_make_identifier(Scanner* scanner)
 {
 	while (is_letter(peek_curr_char(scanner)) || is_digit(peek_curr_char(scanner))) adv_char(scanner);
 
-	Token token = make_token_from_curr(get_identifier_type(scanner));
+	Token token = make_token_from_curr(scanner, get_identifier_type(scanner));
 	/*switch (token.type)
 	{
 	case TOKEN_IS:
@@ -246,5 +246,5 @@ Token scan_next_token(Scanner* scanner)
 	case '"': return tkn_make_string(scanner);
 	}
 
-	return make_errortok_from_curr("Unexpected character.");
+	return make_errortok_from_curr(scanner, "Unexpected character.");
 }

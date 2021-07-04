@@ -2,6 +2,7 @@
 
 #include "runLines.h"
 #include <stdlib.h>
+#include "common.h"
 #include "kmem.h"
 
 #define GET_LAST_LINE(array) (array->count == 0 ? NULL : &array->lines[array->count - 1])
