@@ -9,7 +9,7 @@ typedef struct GenericArray {
 } GenericArray;
 
 void genarr_init(GenericArray* arr, int elementSize);
-void genarr_free(GenericArray* arr);
+void genarr_free(GenericArray* arr); 
 void genarr_add(GenericArray* arr, void* element);
 void* genarr_get(GenericArray* arr, int index);
 

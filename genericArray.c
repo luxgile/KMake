@@ -10,7 +10,7 @@ void genarr_init(GenericArray* arr, int elementSize) {
 	arr->elements = kmem_reallocate(NULL, 0, elementSize * arr->capacity);
 	arr->elementSize = elementSize;
 }
-
+ 
 void genarr_free(GenericArray* arr) {
 	kmem_reallocate(arr->elements, arr->elementSize * arr->capacity, 0);
 	genarr_init(arr, arr->elementSize);

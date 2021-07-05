@@ -160,7 +160,7 @@
     <ClCompile Include="commonTypes.h" />
     <ClCompile Include="genericArray.c" />
     <ClCompile Include="genericArray.h" />
-    <ClCompile Include="hashTable.c" />
+    <ClCompile Include="hashmap.c" />
     <ClCompile Include="kcompiler.c" />
     <ClCompile Include="kdebug.c" />
     <ClCompile Include="kmem.c" />
@@ -178,7 +178,7 @@
     <ClInclude Include="bytecode.h" />
     <ClInclude Include="byteStack.h" />
     <ClInclude Include="common.h" />
-    <ClInclude Include="hashTable.h" />
+    <ClInclude Include="hashmap.h" />
     <ClInclude Include="kcompiler.h" />
     <ClInclude Include="kdebug.h" />
     <ClInclude Include="kmem.h" />

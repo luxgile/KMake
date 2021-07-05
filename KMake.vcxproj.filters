@@ -63,9 +63,6 @@
     <ClCompile Include="commonTypes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hashTable.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="kparser.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -82,6 +79,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="opcodes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hashmap.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -107,9 +107,6 @@
     <ClInclude Include="byteArray.h">
       <Filter>Header Files\Collections</Filter>
     </ClInclude>
-    <ClInclude Include="hashTable.h">
-      <Filter>Header Files\Collections</Filter>
-    </ClInclude>
     <ClInclude Include="typeTable.h">
       <Filter>Header Files\Collections</Filter>
     </ClInclude>
@@ -133,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="opcode_enums.h">
       <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="hashmap.h">
+      <Filter>Header Files\Collections</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

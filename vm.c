@@ -29,7 +29,7 @@ void vm_error(VM* vm, const char* format, ...) {
 }
 
 void vm_init(VM* vm) {
-	vm->stack.stacktop = vm->stack.stack;
+	bytestk_init(&vm->stack, 2048);
 	opcode_init_reg(&vm->opReg);
 	opcode_impl_generate(&vm->opReg);
 	typetbl_init(&vm->typeTable);
@@ -39,6 +39,7 @@ void vm_init(VM* vm) {
 }
 
 void vm_free(VM* vm) {
+	bytestk_free(&vm->stack);
 	opcode_free_reg(&vm->opReg);
 	typetbl_free(&vm->typeTable);
 	typearr_free(&vm->stackTypes);
@@ -51,9 +52,9 @@ void vm_push(VM* vm, Byte1* value, TYPE_ID type, int size) {
 	bytestk_push_arr(&vm->stack, value, size);
 }
 
-void vm_pop(VM* vm, Byte1* out_value, TYPE_ID type, int size) {
+void vm_pop(VM* vm, Byte1** out_value, TYPE_ID type, int size) {
 	typearr_remove(&vm->stackTypes, type);
-	bytestk_pop_arr(&vm->stack, &out_value, size);
+	bytestk_pop_arr(&vm->stack, out_value, size);
 }
 
 TYPE_ID vm_peek_type(VM* vm) {
@@ -70,6 +71,10 @@ Byte1 vm_read_ip(VM* vm) {
 
 static InterpretResult __run_code(OpCodeRegister* reg, VM* vm, OpCode op) {
 	OpCodeFn* fn = (OpCodeFn*)opcode_get_op_func(reg, op);
+	if (fn == NULL) {
+		printf("No opcode found for: %d\n", op);
+		return INTERPRET_RUNTIME_ERROR;
+	}
 	return (*fn)(vm);
 }
 
@@ -83,7 +88,7 @@ InterpretResult vm_run(VM* vm) {
 #ifdef DEBUG_TRACE_EXECUTION
 
 		printf("\t\t");
-		Byte1* currentByte = vm->stack.stacktop;
+		Byte1* currentByte = vm->stack.stack;
 		for (int i = 0; i < vm->stackTypes.count; i++) {
 			TYPE_ID type = vm->stackTypes.types[i];
 			printf("[");
@@ -94,14 +99,14 @@ InterpretResult vm_run(VM* vm) {
 			currentByte += typeSize;
 			type++;
 		}
-		printf("-> (%ub)", vm->stack.stacktop - vm->stack.stack);
+		printf("-> (%u)", vm->stack.stacktop - vm->stack.stack);
 		printf("\n");
 		debug_disassemble_opcode(vm->chunk, vm->ip - vm->chunk->code);
 #endif
 
 		Byte1 instruction = vm_read_ip(vm);
-		__run_code(&vm->opReg, vm, instruction);
-		break;
+		InterpretResult result = __run_code(&vm->opReg, vm, instruction);
+		if (result != INTERPRET_NONE) return result;
 	}
 	return INTERPRET_OK;
 }
@@ -117,6 +122,7 @@ InterpretResult vm_interpret(VM* vm, const char* source) {
 
 	vm->chunk = &c;
 	vm->ip = vm->chunk->code;
+	bytestk_clear(&vm->stack);
 
 	InterpretResult result = vm_run(vm);
 

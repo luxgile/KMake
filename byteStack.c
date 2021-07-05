@@ -19,6 +19,10 @@ inline int bytestk_count(ByteStack* stack) {
 	return (int)(stack->stacktop - stack->stack);
 }
 
+void bytestk_clear(ByteStack* stack) {
+	stack->stacktop = stack->stack;
+}
+
 void bytestk_push(ByteStack* stack, Byte1 byte) {
 #ifdef DEBUG_SAFETY
 	if (bytestk_count(stack) == stack->capacity) {

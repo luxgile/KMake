@@ -13,7 +13,8 @@ static void repl(VM* vm)
 			break;
 		}
 
-		vm_interpret(vm, line);
+		InterpretResult result = vm_interpret(vm, line);
+		printf("Interpreted with result: %u\n", result);
 	}
 }
 

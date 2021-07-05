@@ -17,6 +17,7 @@ void ktype_print(Byte1* value, TYPE_ID type) {
 	switch (type) {
 	case TYPEID_DEC: printf("%g", ktype_double(value)); break;
 	case TYPEID_BOOL: printf("%s", ktype_bool(value) ? "true" : "false"); break;
+	default: printf("var type: %u", type);
 		//case TYPEID_STRING: printf("%s", (char*)CAST(bytes, StringPointer*)->base.p); break;
 	}
 }

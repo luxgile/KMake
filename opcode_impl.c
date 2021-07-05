@@ -24,54 +24,58 @@ static InterpretResult __op_constant(VM* vm) {
 }
 
 static InterpretResult __op_negate(VM* vm) {
-	double b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	b = -b;
-	vm_push(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	Byte1* b;
+	vm_pop(vm, &b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	double result = -*(double*)b;
+	vm_push(vm, &result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
 	return INTERPRET_NONE;
 }
 
 static InterpretResult __op_not(VM* vm) {
-	bool b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
-	b = !b;
-	vm_push(vm, (Byte1*)&b, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
+	Byte1* b;
+	vm_pop(vm, &b, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
+	bool result = !*(bool*)b;
+	vm_push(vm, &result, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
 	return INTERPRET_NONE;
 }
 
 static InterpretResult __op_divide(VM* vm) {
-	double a, b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	vm_pop(vm, (Byte1*)&a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	double result = a / b;
-	vm_push(vm, (Byte1*)&result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	Byte1* a = NULL;
+	Byte1* b = NULL;
+	vm_pop(vm, &b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	vm_pop(vm, &a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	double result = *(double*)a / *(double*)b;
+	vm_push(vm, &result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
 	return INTERPRET_NONE;
 }
 
 static InterpretResult __op_mult(VM* vm) {
-	double a, b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	vm_pop(vm, (Byte1*)&a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	double result = a * b;
-	vm_push(vm, (Byte1*)&result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	Byte1* a = NULL;
+	Byte1* b = NULL;
+	vm_pop(vm, &b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	vm_pop(vm, &a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	double result = *(double*)a * *(double*)b;
+	vm_push(vm, &result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
 	return INTERPRET_NONE;
 }
 
 static InterpretResult __op_subtract(VM* vm) {
-	double a, b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	vm_pop(vm, (Byte1*)&a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	double result = a - b;
-	vm_push(vm, (Byte1*)&result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	Byte1* a = NULL;
+	Byte1* b = NULL;
+	vm_pop(vm, &b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	vm_pop(vm, &a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	double result = *(double*)a - *(double*)b;
+	vm_push(vm, &result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
 	return INTERPRET_NONE;
 }
 
 static InterpretResult __op_add(VM* vm) {
-	double a, b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	vm_pop(vm, (Byte1*)&a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	double result = a + b;
-	vm_push(vm, (Byte1*)&result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	Byte1* a = NULL;
+	Byte1* b = NULL;
+	vm_pop(vm, &b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	vm_pop(vm, &a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	double result = *(double*)a + *(double*)b;
+	vm_push(vm, &result, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
 	return INTERPRET_NONE;
 }
 
@@ -85,27 +89,29 @@ static InterpretResult __op_equals(VM* vm) {
 #endif
 	Byte1* a = NULL;
 	Byte1* b = NULL;
-	vm_pop(vm, b, type, GET_TYPE_SIZE(vm, type));
-	vm_pop(vm, a, type, GET_TYPE_SIZE(vm, type));
+	vm_pop(vm, &b, type, GET_TYPE_SIZE(vm, type));
+	vm_pop(vm, &a, type, GET_TYPE_SIZE(vm, type));
 	bool result = ktype_equality(a, b, type);
-	vm_push(vm, (Byte1*)&result, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
+	vm_push(vm, &result, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
 	return INTERPRET_NONE;
 }
 
 static InterpretResult __op_great(VM* vm) {
-	double a, b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	vm_pop(vm, (Byte1*)&a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	bool result = a > b;
-	vm_push(vm, (Byte1*)&result, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
+	Byte1* a = NULL;
+	Byte1* b = NULL;
+	vm_pop(vm, &b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	vm_pop(vm, &a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	bool result = *(bool*)a > *(bool*)b;
+	vm_push(vm, &result, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
 	return INTERPRET_NONE;
 }
 
 static InterpretResult __op_less(VM* vm) {
-	double a, b;
-	vm_pop(vm, (Byte1*)&b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	vm_pop(vm, (Byte1*)&a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
-	bool result = a < b;
+	Byte1* a = NULL;
+	Byte1* b = NULL;
+	vm_pop(vm, &b, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	vm_pop(vm, &a, TYPEID_DEC, GET_TYPE_SIZE(vm, TYPEID_DEC));
+	bool result = *(bool*)a < *(bool*)b;
 	vm_push(vm, (Byte1*)&result, TYPEID_BOOL, GET_TYPE_SIZE(vm, TYPEID_BOOL));
 	return INTERPRET_NONE;
 }
@@ -131,7 +137,7 @@ static InterpretResult __op_pop(VM* vm) {
 static InterpretResult __op_print(VM* vm) {
 	TYPE_ID type = vm_peek_type(vm);
 	Byte1* byte = NULL;
-	vm_pop(vm, byte, type, GET_TYPE_SIZE(vm, type));
+	vm_pop(vm, &byte, type, GET_TYPE_SIZE(vm, type));
 	ktype_print(byte, type);
 	return INTERPRET_NONE;
 }
@@ -160,7 +166,7 @@ void opcode_impl_generate(OpCodeRegister* reg) {
 	opcode_register_code(reg, __create_holder(OP_LESS, __op_less));
 	opcode_register_code(reg, __create_holder(OP_FALSE, __op_false));
 	opcode_register_code(reg, __create_holder(OP_TRUE, __op_true));
-	opcode_register_code(reg, __create_holder(OP_FALSE, __op_pop));
+	opcode_register_code(reg, __create_holder(OP_POP, __op_pop));
 	opcode_register_code(reg, __create_holder(OP_PRINT, __op_print));
 	opcode_register_code(reg, __create_holder(OP_RETURN, __op_return));
 }
