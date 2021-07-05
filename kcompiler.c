@@ -19,7 +19,7 @@ void read_statement(KCompiler* compiler);
 void read_declaration(KCompiler* compiler);
 void read_number(KCompiler* compiler);
 void read_literal(KCompiler* compiler);
-//void read_string(KCompiler* compiler);
+void read_string(KCompiler* compiler);
 
 //Move to different file
 ParseRule g_parseRules[] = {
@@ -46,7 +46,7 @@ ParseRule g_parseRules[] = {
   [TOKEN_LESS_OR_EQUALS] = {NULL,     read_binary,   PREC_COMPARISON},
 
   [TOKEN_IDENTIFIER] = {NULL,     NULL,   PREC_NONE},
-  //[TOKEN_STRING] = {read_string,     NULL,   PREC_NONE},
+  [TOKEN_STRING] = {read_string,     NULL,   PREC_NONE},
   [TOKEN_NUMBER] = {read_number,   NULL,   PREC_NONE},
   [TOKEN_AND] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_CLASS] = {NULL,     NULL,   PREC_NONE},
@@ -197,10 +197,10 @@ void read_literal(KCompiler* compiler) {
 	}
 }
 
-//void read_string(KCompiler* compiler) {
-//	StringPointer* s = CopyString(compiler->parser.previous.start + 1, compiler->parser.previous.length - 2);
-//	emit_constp(compiler, s, TYPEID_STRING);
-//}
+void read_string(KCompiler* compiler) {
+	String s = ktype_string_create(compiler->parser.previous.start + 1, compiler->parser.previous.length - 2);
+	emit_const(compiler, &s, TYPEID_STRING);
+}
 
 void read_number(KCompiler* compiler) {
 	double value = strtod(compiler->parser.previous.start, NULL);

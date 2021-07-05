@@ -4,7 +4,7 @@
 #include "bytecode.h"
 #include "byteStack.h"
 #include "typeTable.h"
-#include "hashTable.h"
+#include "hashmap.h"
 #include "opcodes.h"
 
 struct OpCodeRegister;
@@ -18,7 +18,6 @@ typedef struct VM {
 
 	OpCodeRegister opReg;
 	TypeTable typeTable;
-	//HashTable strings;
 	//HashTable globals;
 } VM;
 

@@ -37,7 +37,7 @@ void typetbl_init(TypeTable* table)
 	//Bool = 4
 	TypeInfo stringInfo;
 	stringInfo.name = "String";
-	stringInfo.size = sizeof(StringPointer);
+	stringInfo.size = sizeof(String);
 	typetbl_add(table, stringInfo);
 }
 

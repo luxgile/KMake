@@ -20,18 +20,18 @@
 
 typedef struct
 {
-	TYPE_ID type;
 	void* p;
+	int size;
 } Pointer;
 
 typedef struct
 {
-	Pointer base;
+	char* chars;
 	int length;
-	Byte4 hash;
-} StringPointer;
+} String;
 
 //StringPointer* CopyString(const char* chars, int length);
+String ktype_string_create(const char* chars, int length);
 bool ktype_equality(Byte1* a, Byte1* b, TYPE_ID type);
 void ktype_print(Byte1* value, TYPE_ID type);
 

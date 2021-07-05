@@ -9,8 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct hashmap;
-
 struct hashmap* hashmap_new(size_t elsize, size_t cap, uint64_t seed0, uint64_t seed1, 
 	uint64_t(*hash)(const void* item, uint64_t seed0, uint64_t seed1), 
 	int (*compare)(const void* a, const void* b, void* udata),
